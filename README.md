@@ -25,8 +25,8 @@ Reddit RSS -> n8n (orquestador) -> Python (E/T) -> PostgreSQL
 
 1. Clonar el repositorio:
 ```bash
-git clone <url-del-repositorio>
-cd osint-pipeline
+git clone https://github.com/maxiscopel/proyectoOSINT-Scopel_Fracchia.git
+cd proyectoOSINT-Scopel_Fracchia
 ```
 
 2. Levantar los servicios:
