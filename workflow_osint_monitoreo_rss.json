@@ -1,0 +1,389 @@
+{
+  "id": "44r3Ak5lL8SZPy6q",
+  "name": "osint_monitoreo_rss",
+  "active": 1,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        520
+      ],
+      "name": "Schedule Trigger",
+      "id": "6f9979ab-3e0f-467e-b8b9-29aef893d1c2"
+    },
+    {
+      "parameters": {
+        "command": "python3 /data/scripts/osint_classify.py --input /tmp/osint_raw.json --out /tmp/osint_classified.json",
+        "executeOnce": true
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -450,
+        520
+      ],
+      "name": "Clasificar (Python)",
+      "id": "bb2c3d4e-5f6a-7b8c-9d0e-1f2a3b4c5d6e"
+    },
+    {
+      "parameters": {
+        "jsCode": "const bin = items[0] && items[0].binary && items[0].binary.data;\n\nif (!bin) {\n  return [{ json: { error: 'Salida vacia del pipeline', stdout: '' } }];\n}\n\nlet records;\nlet text = '';\ntry {\n  // n8n 2.x guarda binarios en modo filesystem-v2: bin.data es un marcador,\n  // NO base64. Forma soportada de leer el contenido (docs: Code node >\n  // getBinaryDataBuffer).\n  const buf = await this.helpers.getBinaryDataBuffer(0, 'data');\n  text = buf.toString('utf-8');\n  records = JSON.parse(text);\n} catch (e) {\n  return [{ json: { error: `JSON invalido en clasificado: ${e.message}`, stdout: String(text).slice(0, 300) } }];\n}\n\nif (!Array.isArray(records) || records.length === 0) {\n  return [{ json: { error: 'El pipeline no devolvio registros (posible rate limit de Reddit)', count: 0 } }];\n}\n\n// Clasificacion y sentimiento NO se calculan aca: viven en osint_pipeline.py.\n// Este nodo solo valida y mapea al esquema final. created_utc se pasa tal cual\n// (YYYY-MM-DD HH:MM:SS UTC) para no desplazar la zona horaria.\nreturn records\n  .filter((r) => r && r.post_id && r.title)\n  .map((r) => ({\n    json: {\n      post_id: String(r.post_id).slice(0, 300),\n      title: String(r.title).slice(0, 500),\n      content: r.content != null ? String(r.content).slice(0, 10000) : '',\n      raw_content: r.raw_content != null ? String(r.raw_content).slice(0, 10000) : '',\n      author: String(r.author || 'reddit'),\n      subreddit: String(r.subreddit || ''),\n      url: r.url != null ? String(r.url) : '',\n      score: Number(r.score) || 0,\n      num_comments: Number(r.num_comments) || 0,\n      threat_category: String(r.threat_category || 'no_clasificado'),\n      sentiment: String(r.sentiment || 'neutral'),\n      compound: Number(r.compound) || 0,\n      created_utc: r.created_utc ? String(r.created_utc) : null,\n      source: String(r.source || 'reddit-rss')\n    }\n  }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -250,
+        520
+      ],
+      "name": "Validate & Map",
+      "id": "7b2d3f5c-0a4b-4d6e-9f3a-2b3c4d5e6f70"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": ""
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        0,
+        520
+      ],
+      "name": "IF Registros validos",
+      "id": "8c3e4a6d-1b5c-4e7f-0a4b-3c4d5e6f7081"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of items) {\n  console.error(`[osint] Ciclo con errores: ${item.json.error || 'sin detalle'}`);\n  if (item.json.stdout) {\n    console.error(`[osint] stdout: ${String(item.json.stdout).slice(0, 800)}`);\n  }\n}\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        240
+      ],
+      "name": "Log de errores",
+      "id": "04b0c2ef-9dde-4a01-8ccd-b4c5d6e7f809"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO public.posts (\n  post_id, title, content, raw_content, author, subreddit, url,\n  score, num_comments, threat_category, sentiment, compound,\n  created_utc, source, first_seen_at\n)\nVALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())\nON CONFLICT (post_id) DO UPDATE SET\n  score = EXCLUDED.score,\n  num_comments = EXCLUDED.num_comments,\n  compound = EXCLUDED.compound,\n  collected_at = NOW()\nRETURNING post_id, threat_category;",
+        "options": {
+          "queryReplacement": "={{ [$json.post_id, $json.title, $json.content, $json.raw_content, $json.author, $json.subreddit, $json.url, $json.score, $json.num_comments, $json.threat_category, $json.sentiment, $json.compound, $json.created_utc, $json.source] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        200,
+        520
+      ],
+      "name": "Save to DB",
+      "id": "9d4f5b7e-2c6d-4f8a-1b5c-4d5e6f708192",
+      "credentials": {
+        "postgres": {
+          "id": "b9DyoFwK0ohPOdxe",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const total = items.length;\nconst porCategoria = items.reduce((acc, it) => {\n  const c = it.json.threat_category || 'no_clasificado';\n  acc[c] = (acc[c] || 0) + 1;\n  return acc;\n}, {});\n\nconsole.log(`[osint] Ciclo OK: ${total} registros insertados/actualizados`, JSON.stringify(porCategoria));\n\nreturn [{ json: { ciclos_ok: total, por_categoria: porCategoria } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        520
+      ],
+      "name": "Resumen del ciclo",
+      "id": "ae5a6c8f-3d7e-4a9b-2c6d-5e6f708192a3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nodo agregador: consolida los items en 1 solo item\n// para que las estadisticas se ejecuten UNA sola vez por ciclo.\nreturn [{ json: { trigger: true } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        520
+      ],
+      "name": "consolidar",
+      "id": "bf6b7d9a-4e8f-4bac-3d7e-6f708192a3b4"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  threat_category,\n  COUNT(*) AS total,\n  ROUND(100.0 * COUNT(*) / NULLIF(SUM(COUNT(*)) OVER (), 0), 2) AS porcentaje\nFROM public.posts\nGROUP BY threat_category\nORDER BY total DESC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        900,
+        260
+      ],
+      "name": "Threat Stats",
+      "id": "c07c8eab-5f9a-4cbd-4e8f-708192a3b4c5",
+      "credentials": {
+        "postgres": {
+          "id": "b9DyoFwK0ohPOdxe",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  sentiment,\n  COUNT(*) AS total,\n  ROUND(100.0 * COUNT(*) / NULLIF(SUM(COUNT(*)) OVER (), 0), 2) AS porcentaje,\n  ROUND(AVG(compound)::numeric, 4) AS compound_promedio\nFROM public.posts\nGROUP BY sentiment\nORDER BY total DESC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        900,
+        460
+      ],
+      "name": "Sentiment Stats",
+      "id": "d18d9fbc-6aab-4dce-5f9a-8192a3b4c5d6",
+      "credentials": {
+        "postgres": {
+          "id": "b9DyoFwK0ohPOdxe",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  subreddit,\n  COUNT(*) AS n,\n  PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY score) AS mediana_score,\n  PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY num_comments) AS mediana_comentarios,\n  ROUND(STDDEV(score)::numeric, 2) AS desviacion_score,\n  ROUND(STDDEV(num_comments)::numeric, 2) AS desviacion_comentarios,\n  ROUND(AVG(score)::numeric, 2) AS promedio_score,\n  ROUND(AVG(num_comments)::numeric, 2) AS promedio_comentarios\nFROM public.posts\nGROUP BY subreddit\nORDER BY mediana_score DESC NULLS LAST;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        900,
+        660
+      ],
+      "name": "Interaction Stats",
+      "id": "e29ea0cd-7bbc-4edf-6aab-92a3b4c5d6e7",
+      "credentials": {
+        "postgres": {
+          "id": "b9DyoFwK0ohPOdxe",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  DATE(created_utc) AS fecha,\n  COUNT(*) AS total_posts,\n  COUNT(*) FILTER (WHERE threat_category <> 'no_clasificado') AS clasificados,\n  ROUND(AVG(compound)::numeric, 4) AS compound_promedio\nFROM public.posts\nWHERE created_utc IS NOT NULL\nGROUP BY DATE(created_utc)\nORDER BY fecha;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        900,
+        860
+      ],
+      "name": "Temporal Series",
+      "id": "f3afb1de-8ccd-4fe0-7bbc-a3b4c5d6e7f8",
+      "credentials": {
+        "postgres": {
+          "id": "b9DyoFwK0ohPOdxe",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "python3 /data/scripts/osint_fetch.py --subreddits netsec cybersecurity malware phishing malwareanalysis secopsdaily threatintel --limit 100 --out /tmp/osint_raw.json",
+        "executeOnce": true
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -1050,
+        520
+      ],
+      "name": "Fetch (Python)",
+      "id": "a5f933a3-2cdd-4125-85cf-db9a3ebf44a4"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "fileSelector": "/tmp/osint_classified.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -340,
+        660
+      ],
+      "name": "Read Classified (Disk)",
+      "id": "bf16597e-0390-4df2-991c-732761daa15a"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch (Python)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clasificar (Python)": {
+      "main": [
+        [
+          {
+            "node": "Read Classified (Disk)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Map": {
+      "main": [
+        [
+          {
+            "node": "IF Registros validos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Registros validos": {
+      "main": [
+        [
+          {
+            "node": "Save to DB",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log de errores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to DB": {
+      "main": [
+        [
+          {
+            "node": "Resumen del ciclo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resumen del ciclo": {
+      "main": [
+        [
+          {
+            "node": "consolidar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consolidar": {
+      "main": [
+        [
+          {
+            "node": "Threat Stats",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Sentiment Stats",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Interaction Stats",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Temporal Series",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch (Python)": {
+      "main": [
+        [
+          {
+            "node": "Clasificar (Python)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Classified (Disk)": {
+      "main": [
+        [
+          {
+            "node": "Validate & Map",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "exported_from": "n8n database.sqlite (workflow_entity)",
+  "workflow_updated_at": ""
+}

@@ -1,0 +1,17 @@
+certifi==2026.7.22
+charset-normalizer==3.5.0
+click==8.4.2
+defusedxml==0.7.1
+feedparser==6.0.14
+feedparser-sgmllib==2.1.0
+idna==3.18
+joblib==1.5.3
+nltk==3.10.3
+praw==8.0.3
+prawcore==4.0.0
+regex==2026.7.19
+requests==2.34.2
+tqdm==4.70.0
+update_checker==1.0.0
+urllib3==2.7.0
+websocket-client==1.9.0

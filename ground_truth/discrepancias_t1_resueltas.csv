@@ -1,0 +1,11 @@
+post_id,threat_category,sentiment,justificacion
+1vsm77y,malware,neutral,Tema principal: campana de malware (ValleyRAT). El phishing es solo el vector de entrega.
+1vslpnb,otro,neutral,Tecnica de ataque (desync HTTP), no una vulnerabilidad especifica de software.
+1vskftw,vulnerabilidad,positivo,Tono entusiasta del autor: good story / quite readable / some love :)
+1vqojw3,vulnerabilidad,negativo,SQL Injection es un bug de seguridad de software. Tono critico al vendor.
+1vzx029,no_clasificado,neutral,Tecnica de analisis (reverse engineering con LLM), no una amenaza.
+1w4agtv,vulnerabilidad,neutral,Reporte factual de explotacion en curso. Urgencia pero sin alarma emocional.
+1vyonto,otro,neutral,Tecnica de explotacion general (gadgets de deserializacion), no una vuln reportada.
+1vyxx41,otro,neutral,Reporte de intrusion/ataque; las CVEs son el vector, no el tema principal.
+1vnbfg8,no_clasificado,neutral,Noticia de privacidad/auditoria policial, no una amenaza cibernetica tecnica.
+1vnc7i7,no_clasificado,positivo,Herramienta de soporte para vuln research, no una amenaza. Tono entusiasta (harder cases :)).
