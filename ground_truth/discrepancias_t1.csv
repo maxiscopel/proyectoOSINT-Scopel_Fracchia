@@ -1,0 +1,29 @@
+﻿post_id,subreddit,title,content,threat_category_E1,threat_category_E2,sentiment_E1,sentiment_E2
+1vnbfg8,cybersecurity,Flock CEO says new auditing tools could help catch cops abusing surveillance access,submitted by /u/runswithscissors475 [link] [comments],no_clasificado,otro,neutral,neutral
+1vnc7i7,cybersecurity,Finding the bug was easier than figuring out which versions were actually vulnerable,"I kept hitting this during vulnerability research when I’d find the bug, then spend hours jumping between tags to work out the affected range. So I tried turning the vulnerability description into a source code check and running it across releases. It caught an interesting case in qutebrowser where one advisory implied 11 releases were safe even though the fix wasn’t present in them. I turned the workflow into an open source CLI called Taggity. Describe the vulnerability, review the drafted check, then test it against any version or audit an advisory’s claimed range. Repo: https://github.com/nickelsec/taggity If you have an advisory with a messy or disputed version range, send it over. I need harder cases :) submitted by /u/VoidEqualZero [link] [comments]",no_clasificado,otro,positivo,neutral
+1vqojw3,netsec,They patched their SaaS and left the self-hosted OSS version vulnerable - AppFlowy Authenticated SQL Injection,"submitted by    /u/ezzzzz  
+ [link]   [comments]",otro,vulnerabilidad,negativo,negativo
+1vskftw,netsec,How to break secure boot without touching any cryptography,"I finally found some time to organize my notes on secure boot, remote attestation, measured boot and in general embedded security. 
+ This is not ground breaking zero-day research but I figured some of you might like a good story. Good here is obviously subjective but I felt like it came out quite readable.
+ This blog builds heavily on public research so as already stated at the end of article if you liked some particular section, show the respective person some love :)
+ P.S.: yes I know the image is AI generated please don’t give me shit for that 
+    submitted by    /u/0x00rick  
+ [link]   [comments]",vulnerabilidad,vulnerabilidad,positivo,neutral
+1vslpnb,netsec,CRLF-Powered Desync Attacks: Beheading HTTP Streams,"submitted by    /u/t0xodile  
+ [link]   [comments]",otro,vulnerabilidad,neutral,neutral
+1vsm77y,netsec,ValleyRAT campaign uses fake GSTR-3B overdue notice targeting Indian taxpayers,"submitted by    /u/unknownhad  
+ [link]   [comments]",malware,phishing,neutral,neutral
+1vyonto,netsec,Ruby Marshal Kick-off Gadgets - elttam,"submitted by    /u/AnimalStrange  
+ [link]   [comments]",otro,vulnerabilidad,neutral,neutral
+1vyxx41,netsec,☢️ Philippine Nuclear Agency and Naval Contractor Targeted by Suspected Chinese-Speaking Operator,"The Hunt.io research team found an open directory staging the full toolkit behind an intrusion into a Philippine nuclear research agency and a naval contractor. The ownCloud path is the interesting part technically.
+ CVE-2023-49105 lets you forge pre-signed WebDAV URLs when the signing secret is empty, which is the default state on a fresh install. Five custom Python scripts on the server implement this: the signing routine passes an empty bytes literal as the PBKDF2 salt, sets OC-Credential to the account being impersonated, and issues GET requests against /remote.php/dav/files/<account>/<path>, receiving files as that user with no credentials. Four scripts target one account each, the fifth adds PROPFIND enumeration with Depth: 1 to walk folders that were not pre-enumerated.
+ The naval contractor was hit separately via CVE-2024-28000 (LiteSpeed Cache) using a custom Go reimplementation of MT19937 with PHP mt_rand() parity, verified against 11 known seed/output pairs, plus an XML-RPC brute force with rockyou.txt. Both produced unauthorized access independently.
+ We also found a separate, possibly unrelated EtherHiding compromise on the same WordPress site. A HuntSQL query on the smart contract address returned 174 unique IPs hosting likely compromised pages with the same NoChain loader strings.
+ Full writeup with IOCs, the signing routine, and MITRE mapping: https://hunt.io/blog/chinese-speaking-operator-philippine-nuclear-naval-contractor 
+    submitted by    /u/Straight-Practice-99  
+ [link]   [comments]",otro,vulnerabilidad,neutral,neutral
+1vzx029,netsec,LLM-Driven Reverse Engineering vs Iterative LLM Obfuscation,"submitted by    /u/AvenueJay  
+ [link]   [comments]",no_clasificado,otro,neutral,neutral
+1w4agtv,netsec,Authentication bypass in EOL Proxmox VE 7 release,"A lot of proxmox 7.0-7 and < 8.0.4 has been rooted today, it's needed to have port :8006 open, exploitation demo here: https://forum.proxmox.com/threads/proxmox-ve-7-is-vulnerable-to-some-type-of-0day-rce-non-auth.186078/post-867875
+    submitted by    /u/WiuEmPe  
+ [link]   [comments]",vulnerabilidad,vulnerabilidad,negativo,neutral

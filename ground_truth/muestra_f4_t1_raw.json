@@ -1,0 +1,479 @@
+[
+  {
+    "post_id": "1w2mktz",
+    "subreddit": "netsec",
+    "title": "Anatomy of a ServiceNow Red Team",
+    "raw_content": "submitted by    /u/gid0rah  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1vz6179",
+    "subreddit": "netsec",
+    "title": "PATCHCORD: New malware cluster targets Afghan telecom and South Asian critical infrastructure",
+    "raw_content": "Acronis Threat Research Unit (TRU) has identified an ongoing campaign delivering a previously undocumented custom backdoor against Afghan telecom providers and South Asian critical infrastructure organizations. The backdoor, tracked as PATCHCORD, is a compiled C/C++ implant delivered through sector-specific lures, including fake VPN installers impersonating Afghan Telecom (AFTEL) and telecom management tools.\n The research is published here - https://www.acronis.com/en/tru/posts/patchcord-new-malware-cluster-targets-afghan-telecom-and-south-asian-critical-infrastructure/\n    submitted by    /u/acronis  \n [link]   [comments]",
+    "threat_category": "malware",
+    "sentiment": "negativo",
+    "compound": -0.8779
+  },
+  {
+    "post_id": "1vru26k",
+    "subreddit": "netsec",
+    "title": "How a popular Android library silently exposed thousands of apps to Arbitrary File Overwrite (AFO). https://itis911.github.io/writeups/cropper-vulnerability.html",
+    "raw_content": "submitted by    /u/Fit_Veterinarian4403  \n [link]   [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "positivo",
+    "compound": 0.3612
+  },
+  {
+    "post_id": "1w429pe",
+    "subreddit": "netsec",
+    "title": "Don’t Let Abliteration Abliterate Your Bug Hunting: Discovering Verdict Bias in Uncensored Models",
+    "raw_content": "submitted by    /u/onlinereadme  \n [link]   [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "positivo",
+    "compound": 0.0516
+  },
+  {
+    "post_id": "1vsm77y",
+    "subreddit": "netsec",
+    "title": "ValleyRAT campaign uses fake GSTR-3B overdue notice targeting Indian taxpayers",
+    "raw_content": "submitted by    /u/unknownhad  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.4767
+  },
+  {
+    "post_id": "1vk1ybs",
+    "subreddit": "netsec",
+    "title": "Beyond Prompt Injection: Hacking Apple's Private Cloud Compute",
+    "raw_content": "submitted by /u/smaury [link] [comments]",
+    "threat_category": "otro",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1w05xwz",
+    "subreddit": "netsec",
+    "title": "UniBLEed: Unauthenticated Root RCE on Any Unitree G1 Humanoid Robot Within Bluetooth Range",
+    "raw_content": "submitted by    /u/WiseTuna  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.4824
+  },
+  {
+    "post_id": "1vlsvsn",
+    "subreddit": "netsec",
+    "title": "Expired DMARC reporting endpoint exposed a NYSE Fortune 1000's infrastructure for $10",
+    "raw_content": "I registered an expired DMARC reporting domain (gca-emailauth[.]org) for $10. It had been published as the aggregate-reporting address in Global Cyber Alliance DMARC training docs going back to a 2019 bootcamp, and at some point it lapsed. Shortly after registration, aggregate DMARC reports for 86 domains across 20+ organizations started arriving. 56 belonged to The Toro Company (NYSE-listed), including myturf[.]com, their distributor platform, which sits at p=none. The rest - University of Wisconsin–Stevens Point (14 subdomains), the North Carolina School of Science and Mathematics, Ennis ISD (Texas), Great Prairie AEA (an Iowa education agency serving 35,000 students), two county governments, and several commercial domains. For most of these it was a second rua address sitting behind a working commercial processor (Proofpoint, in Toro's case). Reports still arrived at the primary. GCA's engineers later traced it to a former partner who'd held the domain and let it lapse - the dependency was never written down. As of my last sweep, 65 of the 86 still publish the endpoint. We disclosed to everyone whose reports we were receiving; only 21 domains stopped publishing the endpoint, and almost nobody replied. After 8 months of owning the domain, we coordinated a transfer back to GCA. submitted by /u/PlasmaJam [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.3182
+  },
+  {
+    "post_id": "1w46vwa",
+    "subreddit": "netsec",
+    "title": "GeoNetwork - Pre-Auth RCE via Unauthenticated File Upload and Unsafe XSLT Processor (4 CVEs, 121 government deployments, all patched)",
+    "raw_content": "submitted by    /u/ZealousidealHunter80  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1vslpnb",
+    "subreddit": "netsec",
+    "title": "CRLF-Powered Desync Attacks: Beheading HTTP Streams",
+    "raw_content": "submitted by    /u/t0xodile  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.4404
+  },
+  {
+    "post_id": "1w5l1j8",
+    "subreddit": "netsec",
+    "title": "Rooted in Trust: Three privilege-escalation vulnerabilities in HP Easy Start for macOS (CVE-2026-12554, CVE-2026-12555, CVE-2026-12556)",
+    "raw_content": "Three high-severity vulnerabilities in HP Easy Start for macOS, rated CVSS 8.5, 7.7 and 7.7.\n The research looks at the trust boundaries around privileged components and how they can break down in practice. HP has published an advisory and released an updated version.\n Disclosure: I’m the researcher who reported these vulnerabilities.\n    submitted by    /u/ciphersecuritylabs  \n [link]   [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "positivo",
+    "compound": 0.91
+  },
+  {
+    "post_id": "1vz4fym",
+    "subreddit": "netsec",
+    "title": "Minimus is shutting down after raising $51M, Twistlock founders returning cash to investors",
+    "raw_content": "Twistlock founders Ben Bernstein, Dima Stopel and John Morello are shutting down their newest startup Minimus. They raised 51 million in seed funding from YL Ventures and Mayfield and had around 60 employees a few months ago. The pitch was stripped down container images that cut out most CVEs before they ever shipped but commercial traction never caught up to the technical story. Customers get a 60 day window before the registry goes fully offline on October 22 and remaining cash is going back to investors. Founder pedigree and funding clearly do not guarantee product market fit. Anyone else surprised this one did not make it?\n    submitted by    /u/DakPrescottQBDraw  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.6486
+  },
+  {
+    "post_id": "1vrtfdo",
+    "subreddit": "netsec",
+    "title": "Dissecting House of Apple 2 on modern glibc",
+    "raw_content": "submitted by    /u/jpxzurich  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1vyzs1y",
+    "subreddit": "netsec",
+    "title": "Chaining three public V8 bugs to escape the V8 sandbox and recover a real Google v8CTF flag",
+    "raw_content": "submitted by    /u/unknownhad  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.1779
+  },
+  {
+    "post_id": "1vskftw",
+    "subreddit": "netsec",
+    "title": "How to break secure boot without touching any cryptography",
+    "raw_content": "I finally found some time to organize my notes on secure boot, remote attestation, measured boot and in general embedded security. \n This is not ground breaking zero-day research but I figured some of you might like a good story. Good here is obviously subjective but I felt like it came out quite readable.\n This blog builds heavily on public research so as already stated at the end of article if you liked some particular section, show the respective person some love :)\n P.S.: yes I know the image is AI generated please don’t give me shit for that \n    submitted by    /u/0x00rick  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.9892
+  },
+  {
+    "post_id": "1vqojw3",
+    "subreddit": "netsec",
+    "title": "They patched their SaaS and left the self-hosted OSS version vulnerable - AppFlowy Authenticated SQL Injection",
+    "raw_content": "submitted by    /u/ezzzzz  \n [link]   [comments]",
+    "threat_category": "otro",
+    "sentiment": "negativo",
+    "compound": -0.2263
+  },
+  {
+    "post_id": "1vx4j41",
+    "subreddit": "netsec",
+    "title": "Tata’s B2B platform returned OTPs in API responses",
+    "raw_content": "submitted by    /u/EatonZ  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1vxw6ym",
+    "subreddit": "netsec",
+    "title": "Local Privilege Escalation To System In Wibu-Systems CodeMeter Application",
+    "raw_content": "submitted by    /u/dr-w0bbinat0rz  \n [link]   [comments]",
+    "threat_category": "otro",
+    "sentiment": "positivo",
+    "compound": 0.3612
+  },
+  {
+    "post_id": "1vrw3fd",
+    "subreddit": "netsec",
+    "title": "🎥 Operation CameraSwarm: over 14,000 Dahua cameras compromised across Ukraine and Russia",
+    "raw_content": "An operator left their full working directory exposed on an open HTTP server. Hunt.io crawled it, 2,616 files, and rebuilt the campaign from the corpus.\n  \nThree exploitation paths in parallel: an asyncio credential brute-forcer, a CVE-2021-33044/33045 auth-bypass chain, and P2P relay abuse reaching cameras by serial number\n The relay path never authenticates the connecting party, only the session, via a cloud-issued token obtainable with the fixed SDK credentials in every Dahua client\n Two CVE labels in the tooling don't hold up: CVE-2024-39943 is an unrelated Rejetto HFS flaw, and CVE-2025-31702 is a narrower post-auth case, not the unauthenticated relay abuse (that path is a separate non-CVE issue documented by ITRES)\n Full PTCP tunnel breakdown, including the Inverted STUN packet and the bind-to-127.0.0.1 technique\n  \nNeutral attribution throughout, the corpus shows how the operation was built and run, not who ran it.\n Check the full breakdown, IOCs and mitigation strategies:\n https://hunt.io/blog/operation-cameraswarm-dahua-cameras-compromised\n    submitted by    /u/Straight-Practice-99  \n [link]   [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "negativo",
+    "compound": -0.7096
+  },
+  {
+    "post_id": "1w4dvux",
+    "subreddit": "netsec",
+    "title": "From Patch to Exploit; Using Claude Code to reverse engineer an n-day in Papercut NG",
+    "raw_content": "submitted by    /u/kev-thehermit  \n [link]   [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "negativo",
+    "compound": -0.1027
+  },
+  {
+    "post_id": "1vfdep6",
+    "subreddit": "netsec",
+    "title": "Hardware Hacking: From zero to a Pre-Auth Stack Buffer Overflow on Amazon's best-selling router",
+    "raw_content": "submitted by /u/Internal-Key64 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1w5pgmk",
+    "subreddit": "netsec",
+    "title": "QR Phishing With No Image: Text-Only QR Codes for Inboxes w/ Images Disabled",
+    "raw_content": "submitted by    /u/redwheel82  \n [link]   [comments]",
+    "threat_category": "phishing",
+    "sentiment": "negativo",
+    "compound": -0.296
+  },
+  {
+    "post_id": "1vzxkxm",
+    "subreddit": "netsec",
+    "title": "A fake resume invoked China’s defence tech elite, then installed VShell",
+    "raw_content": "submitted by    /u/unknownhad  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.4019
+  },
+  {
+    "post_id": "1viux00",
+    "subreddit": "netsec",
+    "title": "DEF CON talk: 8 in 10 Banks in Belgium HATE This One Weird eID RCE",
+    "raw_content": "Hey everyone, I'm OP here so feel free to ask questions submitted by /u/acorn222 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.3725
+  },
+  {
+    "post_id": "1vsbk66",
+    "subreddit": "netsec",
+    "title": "The Curious Incidents with DNS in the Sandbox at Escape-Time",
+    "raw_content": "Three variations on subversive use of DNS by the Agent are documented in Hugging Face's technical writeup of the July 2026 security incident involving OpenAI models. In this article, I discuss what each of these three types of DNS workarounds achieve in practice, the constraints an actor might have faced to attempt a particular one, and additional benefits from choosing each. \n    submitted by    /u/lowlevelprog  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.802
+  },
+  {
+    "post_id": "1vrpmr2",
+    "subreddit": "netsec",
+    "title": "Hacking your life with AI can get you hacked: How AI orchestration platforms ship RCE by design",
+    "raw_content": "Author here. I audited NocoBase, Flowise, Langflow, Dify, Activepieces, Kestra, and Airflow and disclosed 14 findings. Every platform inherited the same assumption anyone who can touch a workflow is trusted to run code on the host, which is fine for a dev tool on your laptop but not fine for a multi-tenant HTTP service with an unauthenticated webhook. The chain I'd point people to first is the Flowise one (section 2.2): an unauthenticated request → prompt injection → LLM emits Python → a 38-pattern regex blocklist passes it because the dangerous library was pre-imported before the model was asked anything → RCE.\n Two vendors closed their reports as working-as-intended, and I tried to represent their position fairly.\n This research was also presented at DEFCON 34 but now available publicly.\n Happy to answer questions.\n Full whitepaper is available here: https://www.endorlabs.com/learn/how-ai-orchestration-platforms-ship-rce-by-design\n    submitted by    /u/p80n-sec  \n [link]   [comments]",
+    "threat_category": "otro",
+    "sentiment": "positivo",
+    "compound": 0.5719
+  },
+  {
+    "post_id": "1vgr9gv",
+    "subreddit": "netsec",
+    "title": "From wallet drains to a 12-year-old CryptoJS entropy bug: the Ill Bloom investigation",
+    "raw_content": "submitted by /u/coinspect [link] [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "negativo",
+    "compound": -0.4215
+  },
+  {
+    "post_id": "1w5hjc8",
+    "subreddit": "netsec",
+    "title": "The Validator Can Lie: SSRF Beyond URL Validation (GitLab, Mealie, Apache ShenYu, Thumbor)",
+    "raw_content": "submitted by    /u/Xclow3n_  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1vg9704",
+    "subreddit": "netsec",
+    "title": "Stored XSS in Django's admin via an unvalidated URLField display path (CVE-2026-15920)",
+    "raw_content": "submitted by /u/Sandwich_1337 [link] [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1w4aj8x",
+    "subreddit": "netsec",
+    "title": "Off the Hook: Discovering and Observing Active Exploitation of Sangoma Switchvox CVE-2026-9586",
+    "raw_content": "submitted by    /u/scopedsecurity  \n [link]   [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "positivo",
+    "compound": 0.4019
+  },
+  {
+    "post_id": "1vxfd50",
+    "subreddit": "netsec",
+    "title": "The Citizen Lab Bad Connection: Uncovering Global Telecom Exploitation by Covert Surveillance Actors",
+    "raw_content": "submitted by    /u/Ok-Bed5648  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.5423
+  },
+  {
+    "post_id": "1vr9ccc",
+    "subreddit": "netsec",
+    "title": "DeadLock ransomware: Rust-based encryptor with decentralized recovery infrastructure",
+    "raw_content": "submitted by    /u/Doug_Vitale  \n [link]   [comments]",
+    "threat_category": "ransomware",
+    "sentiment": "negativo",
+    "compound": -0.34
+  },
+  {
+    "post_id": "1vy5zqu",
+    "subreddit": "netsec",
+    "title": "Pwning Call of Duty 1: a 20-year-old RCE, found in an evening with AI",
+    "raw_content": "submitted by    /u/wez32  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1w4c1cg",
+    "subreddit": "netsec",
+    "title": "r/netsec monthly discussion & tool thread",
+    "raw_content": "Questions regarding netsec and discussion related directly to netsec are welcome here, as is sharing tool links.\n Rules & Guidelines\n  \nAlways maintain civil discourse. Be awesome to one another - moderator intervention will occur if necessary.\n Avoid NSFW content unless absolutely necessary. If used, mark it as being NSFW. If left unmarked, the comment will be removed entirely.\n If linking to classified content, mark it as such. If left unmarked, the comment will be removed entirely.\n Avoid use of memes. If you have something to say, say it with real words.\n All discussions and questions should directly relate to netsec.\n No tech support is to be requested or provided on r/netsec.\n  \nAs always, the content & discussion guidelines should also be observed on r/netsec.\n Feedback\n Feedback and suggestions are welcome, but don't post it here. Please send it to the moderator inbox.\n    submitted by    /u/albinowax  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.8151
+  },
+  {
+    "post_id": "1vzx029",
+    "subreddit": "netsec",
+    "title": "LLM-Driven Reverse Engineering vs Iterative LLM Obfuscation",
+    "raw_content": "submitted by    /u/AvenueJay  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1w4agtv",
+    "subreddit": "netsec",
+    "title": "Authentication bypass in EOL Proxmox VE 7 release",
+    "raw_content": "A lot of proxmox 7.0-7 and < 8.0.4 has been rooted today, it's needed to have port :8006 open, exploitation demo here: https://forum.proxmox.com/threads/proxmox-ve-7-is-vulnerable-to-some-type-of-0day-rce-non-auth.186078/post-867875\n    submitted by    /u/WiuEmPe  \n [link]   [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1vyonto",
+    "subreddit": "netsec",
+    "title": "Ruby Marshal Kick-off Gadgets - elttam",
+    "raw_content": "submitted by    /u/AnimalStrange  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1vlkth5",
+    "subreddit": "netsec",
+    "title": "CopyEscape: Container-to-host arbitrary file write via docker cp (CVE-2026-17106)",
+    "raw_content": "Author here. We discovered a vulnerability in docker cp that allows a malicious container to create or overwrite files on the machine running the Docker CLI. The exploit combines a filesystem race in Docker’s archive creation with unsafe symlink handling during extraction. Depending on the CLI user’s privileges, this can lead to developer-account compromise or root code execution. Docker confirmed that sbx cp was also affected. Fixed versions: Docker Engine/CLI 29.7.2+ Docker Desktop 4.86.0+ Docker Sandboxes 0.38.0+ Happy to answer technical questions. submitted by /u/ronmasas [link] [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "positivo",
+    "compound": 0.765
+  },
+  {
+    "post_id": "1vx6xaj",
+    "subreddit": "netsec",
+    "title": "Code Execution via Text Template Files | Playbook & Detection",
+    "raw_content": "submitted by    /u/netbiosX  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1w36tcq",
+    "subreddit": "netsec",
+    "title": "Privilege escalation from IIS AppPool to NT Authority/SYSTEM via AD CS RPC endpoint",
+    "raw_content": "submitted by    /u/1046ica  \n [link]   [comments]",
+    "threat_category": "otro",
+    "sentiment": "positivo",
+    "compound": 0.3612
+  },
+  {
+    "post_id": "1vyxx41",
+    "subreddit": "netsec",
+    "title": "☢️ Philippine Nuclear Agency and Naval Contractor Targeted by Suspected Chinese-Speaking Operator",
+    "raw_content": "The Hunt.io research team found an open directory staging the full toolkit behind an intrusion into a Philippine nuclear research agency and a naval contractor. The ownCloud path is the interesting part technically.\n CVE-2023-49105 lets you forge pre-signed WebDAV URLs when the signing secret is empty, which is the default state on a fresh install. Five custom Python scripts on the server implement this: the signing routine passes an empty bytes literal as the PBKDF2 salt, sets OC-Credential to the account being impersonated, and issues GET requests against /remote.php/dav/files/<account>/<path>, receiving files as that user with no credentials. Four scripts target one account each, the fifth adds PROPFIND enumeration with Depth: 1 to walk folders that were not pre-enumerated.\n The naval contractor was hit separately via CVE-2024-28000 (LiteSpeed Cache) using a custom Go reimplementation of MT19937 with PHP mt_rand() parity, verified against 11 known seed/output pairs, plus an XML-RPC brute force with rockyou.txt. Both produced unauthorized access independently.\n We also found a separate, possibly unrelated EtherHiding compromise on the same WordPress site. A HuntSQL query on the smart contract address returned 174 unique IPs hosting likely compromised pages with the same NoChain loader strings.\n Full writeup with IOCs, the signing routine, and MITRE mapping: https://hunt.io/blog/chinese-speaking-operator-philippine-nuclear-naval-contractor \n    submitted by    /u/Straight-Practice-99  \n [link]   [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "positivo",
+    "compound": 0.25
+  },
+  {
+    "post_id": "1vnbfg8",
+    "subreddit": "cybersecurity",
+    "title": "Flock CEO says new auditing tools could help catch cops abusing surveillance access",
+    "raw_content": "submitted by /u/runswithscissors475 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.0772
+  },
+  {
+    "post_id": "1vnintr",
+    "subreddit": "cybersecurity",
+    "title": "What have I signed up for?",
+    "raw_content": "So I decided to major in Cybersecurity. I thought it would be good because I’m not great with people, tech is a growing industry and I like using computers. With that being said I’ve never coded outside of those basic games that middle school had me play. Soooo what am I in for? submitted by /u/DrinkWaterPIease [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.6774
+  },
+  {
+    "post_id": "1vniqtd",
+    "subreddit": "cybersecurity",
+    "title": "I realy need some advice.",
+    "raw_content": "I've liked computers since I was a little kid, and I wanted to have a career in cybersecurity ever since. Now I'm 18, and after some parent pressure and also trying to use my small talent in drawing and sketching, I went to university for studying architecture. And I was wondering if there's any way to get to be at least above average in this field, and to maybe in the long run, get a career, part-time or like a normal career in cybersecurity, either while studying architecture or afterwards. Would it be wise to try to sneak into some cybersecurity lectures in the university? Any help would be appreciated. submitted by /u/ilikedoddrio [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.9325
+  },
+  {
+    "post_id": "1vnc6m5",
+    "subreddit": "cybersecurity",
+    "title": "Hackers used autonomous AI agents to attack Taiwan. Is this the future of cyberwarfare?",
+    "raw_content": "submitted by /u/Fcking_Chuck [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.4767
+  },
+  {
+    "post_id": "1vn8hpr",
+    "subreddit": "cybersecurity",
+    "title": "Trump turns to private sector in offensive hacking operations memo",
+    "raw_content": "submitted by /u/drewchainzz [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.4588
+  },
+  {
+    "post_id": "1vnc7i7",
+    "subreddit": "cybersecurity",
+    "title": "Finding the bug was easier than figuring out which versions were actually vulnerable",
+    "raw_content": "I kept hitting this during vulnerability research when I’d find the bug, then spend hours jumping between tags to work out the affected range. So I tried turning the vulnerability description into a source code check and running it across releases. It caught an interesting case in qutebrowser where one advisory implied 11 releases were safe even though the fix wasn’t present in them. I turned the workflow into an open source CLI called Taggity. Describe the vulnerability, review the drafted check, then test it against any version or audit an advisory’s claimed range. Repo: https://github.com/nickelsec/taggity If you have an advisory with a messy or disputed version range, send it over. I need harder cases :) submitted by /u/VoidEqualZero [link] [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "positivo",
+    "compound": 0.0772
+  },
+  {
+    "post_id": "1v8r0f2",
+    "subreddit": "malware",
+    "title": "BrainDrain: A Chrome extension that collects your AI prompts without you ever opening it and has 100k users, 9 AI platforms",
+    "raw_content": "\"Prompt Optimizer - SecondBrain\" https://chromewebstore.google.com/detail/prompt-optimizer-secondbr/aajjgdpofhhcjmjoombjdfepplndhgcp , v2.3.1. The prompt rewriting works fine. Alongside it a capture engine runs at document_start on 9 AI sites and POSTs prompts and replies to the vendor's ingest endpoint. No interaction with the extension required. Reproduced on a clean profile, with the service worker devtools open: Installed the extension. Never opened it. Browsed to an unrelated site. The extension pulled its configuration from the server and wrote a userId and credentials into extension storage. Opened ChatGPT and asked a question. Once the reply finished, a POST to /context went out carrying both the prompt and the response, encrypted with the credentials issued in step 2. At no point was the extension opened or clicked. Store privacy declaration: \"The developer has disclosed that it will not collect or use your data.\" Write-up, IOCs : https://malext.io/reports/BrainDrain/ Happy to provide the decryption for anyone wanting to test the extension in a sandbox submitted by /u/Huge-Skirt-6990 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.743
+  },
+  {
+    "post_id": "1v6jcus",
+    "subreddit": "malware",
+    "title": "Featured Chrome extension \"Planet Search\" (2M installs) routes every query to the nextgeeker[.]com hijacker network",
+    "raw_content": "While analyzing featured extensions on our beloved chrome web store I landed on Planet Search (`kadaohckdkghfaclhjmkmplebcdcnfnp`), Featured, 2M users, publisher **FREE VPN PLANET SRL**. **The extensions has a 0-byte background.js with zero permissions.** The whole mechanism is one `chrome_settings_overrides` search provider, so nothing shows up statically. It's all server-side. Declared provider is `planet-search[.]com`. Tracing: planet-search\\[.\\]com/search/?q= 301 → sstmaster\\[.\\]com/edge/PN1021?q= 302 → nextgeeker\\[.\\]com/B151001.php?q=&src=PN1021 `nextgeeker[.]com` is flagged as a browser hijacker by multiple vendors (pcrisk, gridinsoft, others). `PN1021` is the affiliate subid linking the extension's traffic to that network. The listing discloses none of the hops and says only that results come from Google (the final page is a Google CSE render). Same publisher ships a \\~1M-user VPN extension and a few others. Still tracing those, not going to characterize them until I have. Report: [ https://malext.io/reports/RoguePlanet/\\](https://malext.io/reports/RoguePlanet/) submitted by /u/Huge-Skirt-6990 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.5913
+  },
+  {
+    "post_id": "1v20htk",
+    "subreddit": "malware",
+    "title": "Fake Github copilot CLI installer trojan",
+    "raw_content": "submitted by /u/reamplumbera [link] [comments]",
+    "threat_category": "malware",
+    "sentiment": "negativo",
+    "compound": -0.4767
+  },
+  {
+    "post_id": "1vkt5f9",
+    "subreddit": "malware",
+    "title": "Teardown of a custom camera exploitation and viewing project (camview) found in an open directory",
+    "raw_content": "Found inside camview.tar.gz on an exposed server: a Docker project used to find, exploit, and stream internet-exposed IP cameras in a browser. The operator's own name for it, from the archive and README, is camview. It is not connected to any legitimate app of the same name. Built with FastAPI and Uvicorn, Python 3.11 image with FFmpeg, nmap, and masscan baked in FFmpeg transcodes the camera RTSP feed to MJPEG for display; nmap and masscan provide the initial scan layer The audit feature is where the exploitation happens: cameras are fingerprinted across a dozen-plus brands, queried over ONVIF, tested against known CVEs, then brute-forced over HTTP and RTSP with a 3,811-entry username:password dictionary Working credentials and stream URL patterns are written to disk and prioritized on later runs, so it improves per vendor The exploitation itself is not custom. camview wraps Ingram, a public webcam scanner, mounted in from the host On a second, unrelated directory, scripts named camworm.py and routerworm.py follow a compromise-then-proxy pattern and contain no actual worm functionality despite the naming We rebuilt the UI in a sealed test environment by running it with empty data. Full analysis in the post: https://hunt.io/blog/russian-speaking-operator-ukrainian-camera-toolkit submitted by /u/Straight-Practice-99 [link] [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "negativo",
+    "compound": -0.1585
+  },
+  {
+    "post_id": "1vbhehl",
+    "subreddit": "malware",
+    "title": "Operation Endgame disrupted hundreds of systems — a StealC backend I reported still exposes its known routes",
+    "raw_content": "In April, I documented a StealC v2 campaign distributed through 19 GitHub typosquat repositories, including one impersonating my own open-source project. The delivery chain was: text GitHub typosquat -> Python dropper -> api.nailproxy.space -> encrypted Windows loader -> StealC v2 DLL -> spellmarketplace.club / 62.60.226.113:6673 GitHub later removed all 19 repositories. The backend infrastructure remained a separate problem. I reported the domains, IP, malware routes, and hashes to the relevant registrars, Cloudflare, the hosting provider, CERT-Bund, GitHub Security Lab, ThreatFox, and AlienVault OTX. Then Operation Endgame disrupted infrastructure associated with SocGholish, Amadey, and StealC. Europol reported 326 servers and 142 domains actioned. Microsoft separately said it moved against more than 200 malicious Amadey and StealC C2 domains and IPs. Three months after my original disclosure, I checked the known infrastructure again using only minimal unauthenticated GET and HEAD requests. The documented malware-specific routes still behave differently from an arbitrary control path: text GET /api/v1/auth/session -> 405 Method Not Allowed GET /api/v1/data/sync -> 405 Method Not Allowed GET /foo/bar/baz -> 404 Not Found HEAD returns the same status codes for all three paths. This does not prove that payload delivery, authentication, or exfiltration still works. I deliberately did not send the HMAC handshake, trigger Stage 2, or interact with the malware protocol. It does show that the known application routes remain registered and reachable. The evidence also has limitations: The monitoring cron produced only 18 measurements over 69 days. There were gaps of up to 20 days. The endpoints briefly became unreachable in late May. GET and HEAD return different status codes on the root paths of spellmarketplace.club and the bare IP, so I do not treat those checks as proof that the complete backend is operational. The point is not that Operation Endgame failed. It clearly disrupted a large amount of criminal infrastructure. The narrower lesson is that both of these statements can be true: Hundreds of malicious systems were disrupted. A specific previously reported backend still exposes its documented malware routes. Full technical write-up, including the original kill chain, abuse-report timeline, ThreatFox/OTX submissions, current probe results, and evidence limitations: https://blog.technopathy.club/operation-endgame-stealc-backend-still-responds I would be interested in how other analysts verify whether previously reported C2 infrastructure was actually included in a large takedown without actively engaging the malware protocol. submitted by /u/oliver-zehentleitner [link] [comments]",
+    "threat_category": "malware",
+    "sentiment": "negativo",
+    "compound": -0.8136
+  },
+  {
+    "post_id": "1v0i6zn",
+    "subreddit": "malware",
+    "title": "FIVEM SUSANO",
+    "raw_content": "susano has trojan in it btw when u open the claude.exe it will download trojan with it submitted by /u/Adventurous_Arm_7128 [link] [comments]",
+    "threat_category": "malware",
+    "sentiment": "neutral",
+    "compound": 0.0
+  }
+]

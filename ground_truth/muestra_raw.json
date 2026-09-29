@@ -1,0 +1,542 @@
+[
+  {
+    "post_id": "1vnje0d",
+    "subreddit": "cybersecurity",
+    "title": "What's your opinion on the best/worst roles you worked in?",
+    "raw_content": "What do y’all think as far as jobs/roles out there would basically match, from most to least importance: Technical and non-repetitive Best for career progression Great pay Little to no bureaucracy. Also, how do y’all feel about remote and hybrid roles? submitted by /u/Optimal-Discussion42 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.7213
+  },
+  {
+    "post_id": "1vnhurv",
+    "subreddit": "cybersecurity",
+    "title": "Would jobs care if I got this?",
+    "raw_content": "I’m currently in the military and actively working on this. I’ve actually completed it. It’s the equivalent of a journeyman. My question is do jobs actually care about something like this? submitted by /u/LordVamp999 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.89
+  },
+  {
+    "post_id": "1vng5gc",
+    "subreddit": "cybersecurity",
+    "title": "Duress Passwords on Trial: TechCrunch's Zack Whittaker and Researcher Runa Sandvik on Border Searches, Device Security, and Protecting Your Data",
+    "raw_content": "submitted by /u/_clickfix_ [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.34
+  },
+  {
+    "post_id": "1vnbfh5",
+    "subreddit": "cybersecurity",
+    "title": "Decoupling Intent from Execution: Why Deterministic Policy Gateways Must Replace LLM-Based Guardrails",
+    "raw_content": "As enterprise security teams grant autonomous AI agents execution privileges—calling internal APIs, orchestrating cloud infrastructure, or querying production databases—a fundamental safety flaw has emerged in standard deployment models. Most current agent frameworks rely on \"soft guardrails\" or secondary LLM reviewer loops to evaluate whether an action is authorized and safe before execution. Here is a breakdown of why this probabilistic security pattern breaks down under adversarial conditions, and how to structure a deterministic policy layer instead: The Fallacy of Probabilistic Guardrails Using a non-deterministic evaluation engine (an LLM) to police non-deterministic output introduces a fundamental feedback flaw. If an attacker achieves indirect prompt injection or manipulates the agent's context window, a secondary LLM reviewer operating on the same or similar context remains vulnerable to identical manipulation. Safety boundaries must execute deterministically at the infrastructure boundary, not probabilistically within the reasoning loop. Threat Vector: Telemetry Poisoning & Induced Self-DoS In fully autonomous environments, an adversary doesn't always need direct prompt access to alter agent behavior. By injecting sub-threshold synthetic noise or anomalous metric spikes into monitored telemetry streams, an attacker can intentionally skew the environmental context the agent evaluates. When the agent interprets this poisoned context, it initiates automated containment or fail-safe routines—triggering self-inflicted system downtime or isolating healthy operational nodes without the attacker ever gaining elevated privileges. Proposed Pattern: Deterministic Gateway Enforcement To enforce true security boundaries around agentic tool-calling, authorization must be entirely decoupled from model reasoning: Intent Proposal (Non-Deterministic): The LLM's role is strictly confined to generating a structured intent request (e.g., a candidate API call or JSON payload). Deterministic Schema Verification: The intent passes to a dedicated API Gateway running static, immutable policy engines (e.g., rigid JSON schemas, RBAC, hard cryptographic token checks). If identity == UNVERIFIED or location == ANOMALOUS, the token is revoked deterministically—no LLM evaluation required. Human-in-the-Loop (HITL) Verification Gates: For actions flagged as high-impact probabilistic anomalies, execution suspends hard at the gateway layer until human validation confirms true business context. I published a full paper breaking down these operational failure modes and architectural diagrams on HackerNoon: https://hackernoon.com/the-vulnerability-of-intent Discussion for the sub: For those managing or building agentic AI pipelines: How are you handling authorization boundaries for tool-calling models? Are you relying on model-level guardrail frameworks, or enforcing strict API gateway schemas? submitted by /u/geercom1 [link] [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "negativo",
+    "compound": -0.5439
+  },
+  {
+    "post_id": "1vn7b12",
+    "subreddit": "cybersecurity",
+    "title": "Breaking: US Officially Authorizes Private Cyber Operations (The rise of Cyber Privateers?)",
+    "raw_content": "submitted by /u/Smart_Office_631 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1vn9ocs",
+    "subreddit": "cybersecurity",
+    "title": "Instagram + LinkedIn compromised, trying to identify the root cause",
+    "raw_content": "I'm looking for some technical insight into how my accounts may have been compromised, rather than help recovering them. I've already recovered my Instagram account and enabled 2FA. I've also hibernated my LinkedIn account while I investigate. What happened Instagram: Someone gained access to my account. They didn't change my password, email, phone number, or other account details. They only used the account to send a link/image to people I had previously chatted with. I recovered the account and enabled 2FA. LinkedIn: An unauthorized job posting appeared on my account. I did not create or authorize the job posting. I had an active LinkedIn session at the time. I've hibernated the account while I investigate. Things I've ruled out so far I use different passwords for Instagram and LinkedIn. I don't reuse those passwords elsewhere. My email has 2FA enabled. I found no unfamiliar email login activity. I haven't installed any APKs or apps from outside the Play Store. I haven't knowingly clicked a suspicious link, although I can't completely rule out phishing. What makes this particularly concerning is that two different platforms were affected, but there was no obvious email compromise or permanent takeover. I'm trying to determine whether this is more likely to be: Stolen session/token Phishing or credential theft Browser/session compromise Third-party service compromise Malware on the phone Or two unrelated account compromises One question I'm particularly interested in: Can an attacker steal/use an existing authenticated session without knowing the password, while leaving the password and email recovery details unchanged? What logs, session information, timestamps, device information, or other evidence should I check to determine the actual root cause? I'm specifically looking for people with experience in account security, session/token theft, incident response, or digital forensics who can help me work through the evidence. submitted by /u/DeaconValhalla [link] [comments]",
+    "threat_category": "phishing",
+    "sentiment": "positivo",
+    "compound": 0.3501
+  },
+  {
+    "post_id": "1vnk26g",
+    "subreddit": "cybersecurity",
+    "title": "Trezor data breach: shipping provider hacked, exposing personal details of thousands of customers",
+    "raw_content": "one of Trezor's shipping providers, ShipMonk, has suffered a data breach affecting sensitive data of buyers from the US, UK, Sweden, Colombia, Brazil, Italy, and Portugal As per Trezor's own announcement, thousands of customers were affected from orders placed between May and August 2026. most had their name, email, phone number, and home address exposed it makes it much worse when it's from a hardware wallet company. If you're a whale, a bad actor now knows your name, email, phone number, and home address, which can be used for phishing, or worse Trezor says its own systems and wallets were not compromised, but is warning customers to be extra cautious of phishing attempts source: https://trezor.io/blog/news/recent-customer-data-exposed-in-shipping-provider-incident submitted by /u/Fabulous-War5239 [link] [comments]",
+    "threat_category": "phishing",
+    "sentiment": "negativo",
+    "compound": -0.9136
+  },
+  {
+    "post_id": "1vnkak3",
+    "subreddit": "cybersecurity",
+    "title": "Cybersecurity statistics of the week (August 3rd - August 9th)",
+    "raw_content": "Hi guys, I send out a weekly newsletter with the latest cybersecurity vendor reports and research, and thought you might find it useful, so sharing it here. All the reports and research below were published between August 3rd - August 9th. You can get the below into your inbox every week if you want: https://www.cybersecstats.com/cybersecstatsnewsletter/ Big Picture Reports 2026 Threat Hunting Report (CrowdStrike) CrowdStrike's annual threat hunting report. Key stats: Vishing intrusions increased by 2x in 1H 2026. Monthly device code phishing attempts increased 15x in 1H 2026. China-nexus adversaries exploited critical vulnerabilities within 24 hours of public proof-of-concept release, and in 1H 2026, 88% of observed exploitation of vulnerabilities with a public PoC occurred within 48 hours of release. Read the full report here . Why Trust is the New Attack Surface: Darktrace's Mid-Year Threat Update 2026 (Darktrace) A mid-year update on how phishing and AI misuse are evolving. Key stats: In the first half of 2026, 67% of phishing emails passed DMARC. VIP users were targeted in 25.8% of phishing attacks. 39% of phishing messages featured novel social engineering techniques. Read the full report here . AI Governance & Agents When AI leaves the chat and enters the workflow (Optro) A good (i.e., detailed and useful) report on why output-focused AI governance breaks down once agents start taking actions. Key stats: 85% of organizations have integrated AI into core operations. Only 18% of leaders have active risk mitigations in place for AI. 40% reported inaccurate AI outputs in the past 12 months, and 27% reported data breaches tied to AI use. Read the full report here . Security Incident INC-2026-07-28-01 (AISI) The UK AI Safety Institute's (AISI) incident report on what happened when they tested frontier AI models. Key stats: A total of 19 distinct unsanctioned actions were catalogued during a routine evaluation of frontier AI models. Seventeen of the 19 unsanctioned actions came from Anthropic's Mythos 5, and two came from OpenAI's GPT-5.6-Sol with cyber classifiers disabled. In 10 of 122 evaluation runs, an AI agent took autonomous, unsanctioned action on the live internet, targeting real people and organisations. Read the full report here . Top 10 for LLM Applications 2026 (OWASP) OWASP's annual top 10 list for LLM applications is out. Key stats: Practitioners rank prompt injection as the number one security challenge from GenAI tools for a third consecutive year. Sensitive information disclosure ranks as the second biggest LLM threat for a second consecutive year. Excessive agency moves from sixth place to third place. Read the full report here . AI Code The shrinking validation window (Pentest Tools) A look at how AI-assisted coding is outpacing vulnerability testing, and the security gaps that this leaves behind. Key stats: 76.4% of developers at enterprises use AI coding tools always (41.5%) or usually (34.9%). 30.3% disagree or strongly disagree with the statement that they have sufficient time to thoroughly review AI-generated code before deployment. Only 8.7% say vulnerability testing keeps pace completely with AI-generated code. Read the full report here . Voice Attacks 2026 Voice Threat Survey (Mutare) Findings from a survey of technology and cybersecurity leaders on how they view voice as an attack vector. Key stats: 93% of organizations believe voice security should be included in cybersecurity and risk management programs. 79% are not highly confident their current defenses could stop an executive or vendor impersonation attack. 67% are concerned about GenAI-based voice attacks and deepfake impersonation. Read the full report here . Enterprise Perspective State of Agentic Adoption 2026 (Opsin) What else is new? AI agents are being created faster than companies are learning how to securely control their access and permissions. Key stats: Enterprise environments now average one AI agent, live or in draft mode, for every employee. 60% of agents provisioned beyond default settings are granted allow-all access rather than being scoped to the permissions their tasks require. 60% of AI agents are judged to have configured capabilities that exceed their original stated intent. Read the full report here . Regional Spotlight African Cyberthreat Assessment Report 2026 (INTERPOL) INTERPOL's assessment of cybercrime across Africa. Key stats: AI enabled 55% of reported cybercrimes across Africa. Cybercrime-related losses in Africa increased from USD 192 million to USD 484 million since 2024. 17% of reported cybercrime cases in Africa in 2025 involved online scams, including phishing, and 14% involved identity theft and financial fraud. Read the full report here . submitted by /u/Narcisians [link] [comments]",
+    "threat_category": "phishing",
+    "sentiment": "negativo",
+    "compound": -0.9558
+  },
+  {
+    "post_id": "1vnl1zy",
+    "subreddit": "cybersecurity",
+    "title": "The CISA Alert: Security Beyond Solitary Confinement",
+    "raw_content": "It is time to turn the tables -- not pile on more computationally complex security algorithms. More Security leads to less. submitted by /u/Dismal-Divide3337 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.8255
+  },
+  {
+    "post_id": "1vnaaof",
+    "subreddit": "cybersecurity",
+    "title": "Anyone remember a site/tool being posted here that listed Certs for each area of cyber security?",
+    "raw_content": "I think it had like columns for each area, OffSec, Product Security, Network Security, GRC, CIDR, SaaS Security, etc and the way it was ordered was the bottom rows were beginner certs and the higher the row, the more complex and advanced it was? Pretty much separated like beginner/intermediate/very senior certs to get Tried searching and for the life of me can’t find it submitted by /u/A_screaming_alpaca [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.9547
+  },
+  {
+    "post_id": "1vnepg2",
+    "subreddit": "cybersecurity",
+    "title": "How Localhost Sharing Actually Works: NAT, Tunnels, P2P, and Relays",
+    "raw_content": "submitted by /u/OkBreath9382 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.4215
+  },
+  {
+    "post_id": "1vncohh",
+    "subreddit": "cybersecurity",
+    "title": "Should I join GT INDUS OR ANYIDEA ABOUT SITA? HOW IS THE WORK CULTURE IN IT AUDIT?",
+    "raw_content": "submitted by /u/No-Story-5212 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.659
+  },
+  {
+    "post_id": "1vnejoj",
+    "subreddit": "cybersecurity",
+    "title": "Trump Enlists Private Sector to Boost Cyber-Offensive Arsenal",
+    "raw_content": "submitted by /u/erier2003 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.4019
+  },
+  {
+    "post_id": "1vnc04h",
+    "subreddit": "cybersecurity",
+    "title": "Did I do this right & what more could I do?",
+    "raw_content": "Last week my MIL received one of those Birthday Invite emails that would normally link to an Evite. She did not immediately recognise the sender's name but still clicked on the link. The link went to a Wix hosted site that presented a login form for her email provider. Which of course she dutifully supplied the credentials for. I forgot to ask if it actually presented an Evite because it seemed clear what the aim was. A little time after this she started getting emails from her contacts querying a similar email they just received from her. To each of these there was a single line reply from her (but not her hand) with exactly the same wording confirming the phishing emails veracity. I got into this about 12 hours later & took the following actions:- - Changed her email password to something new, unique & strong - Dropped all active logged in sessions to her email service. - Trawled the mail logs looking for further evidence of human interaction, password reset requests etc. - Drafted and sent an information & next steps packet to all her contacts. - Emailed the soc address for the website service host with urls & attached phishing example. Looking for fallout from her other linked services that use this email for password resets there appears to have been no further compromise. So, was the scammer running automatic scripts & we caught it before they could capitalise on the breach or should we expect something else soon from them? submitted by /u/ramriot [link] [comments]",
+    "threat_category": "phishing",
+    "sentiment": "positivo",
+    "compound": 0.8823
+  },
+  {
+    "post_id": "1vnke8q",
+    "subreddit": "cybersecurity",
+    "title": "How do you tell users they've been phished?",
+    "raw_content": "So a users been phished and their accounts been locked out, etc. Post remediation, how do you handle them? I'm always a bit caught between not wanting to sound like I'm \"scolding\" them and wanting to make sure they understand that it's important to learn from the situation, while calling them out of the blue to tell them they've been \"hacked\". I'm curious what approaches you guys take or if you have follow up \"consequences\" (additional training, notifying their manager, etc.) We've been fortunate that most of our incidents have been immediately stopped by tooling, but the \"no harm done\" incident is almost more difficult to discuss with folks. submitted by /u/PersistentDabbler [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.8037
+  },
+  {
+    "post_id": "1vn7hdo",
+    "subreddit": "cybersecurity",
+    "title": "Microsoft warns you to stop using SMS-based passwords because of AI phishing, and it'll block you starting with Entra ID",
+    "raw_content": "submitted by /u/WPHero [link] [comments]",
+    "threat_category": "phishing",
+    "sentiment": "negativo",
+    "compound": -0.6705
+  },
+  {
+    "post_id": "1vni921",
+    "subreddit": "cybersecurity",
+    "title": "How many cases do you handle per shift in an MSSP SOC? Is ~100 cases per analyst per shift sustainable?",
+    "raw_content": "By \"case,\" I mean an aggregation of similar alerts for the same detection scenario. We're an MSSP, and in our setup it's not unusual for each analyst to be expected to handle roughly 100 cases per shift. With only two analysts on duty, that can mean starting the shift with around 160 cases already sitting in the SOAR queue. I'm curious how this compares with other MSSPs and SOCs. How many cases does each analyst typically handle per shift? How many analysts are usually on shift? Do you start with a backlog, or is the queue generally kept under control? At what point would you consider the workload unsustainable or a sign that staffing/automation needs to be improved? submitted by /u/Far-Enthusiasm7971 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.7476
+  },
+  {
+    "post_id": "1vnetg7",
+    "subreddit": "cybersecurity",
+    "title": "Has anyone ever responded to one of these? Do they publish without pay?",
+    "raw_content": "(redacted/edited to remove hyperlinks or self promotion) From: [redacted] <[redacted]@enterprisesecuritymag.---> To: [redacted] Subject: [redacted] Cybersecurity Compliance Solutions Recognition Hi [redacted], I hope you are doing well. I am [redacted ] from {enterprise security mag} . We are a prominent magazine that shares insights into enterprise InfoSec, highlighting innovations, integrations, and technologies that protect organizations' data, systems, and digital infrastructure I am delighted to share with you that [redacted] is shortlisted for our annual recognition as the 'Top Cybersecurity Compliance Solutions 2026', a title conferred to a sole organization in this year. This is based on subscribers' nomination and vetting by our advisory panel and our editorial team. For this issue, [redacted] will be profiled with focused content as a reference provider under Cybersecurity Compliance Solutions, and this article will highlight your solutions as the benchmark for this category. Furthermore, this edition will have a dedicated section on Cybersecurity Compliance Solutions, including a 'State of the Industry' report. This section also features strategic perspectives from senior executives and decision makers on how businesses vet and engage with their solutions providers. Companies featured in the magazine experienced increased visibility through our third-party validation. Their recognition reprints have served as a testimonial, as they reported it helped them be trusted by stakeholders, retain existing partnerships, and obtain more prospects. For the organizations who wanted to leverage their distinctions beyond the magazine, we provide full right to reprint this feature/logo usage for a nominal amount. This allowed them to reuse the published feature across proposals, clients conversations, and stakeholder communications. Would this be worth exploring? If so, let me know a convenient time and I’d be happy to schedule a brief conversation between you and our senior manager to outline the details and how you will be presented. Regards, [redacted] submitted by /u/ARealRareWhale [link] [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "positivo",
+    "compound": 0.993
+  },
+  {
+    "post_id": "1vn8v7j",
+    "subreddit": "cybersecurity",
+    "title": "nvd.nist.gov 502 Bad Gateway",
+    "raw_content": "Im getting this 502 error since few days, anyone else experiencing the same or knows how to avoid that? submitted by /u/Own-Professional-992 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.8126
+  },
+  {
+    "post_id": "1vn2m63",
+    "subreddit": "malware",
+    "title": "Webfetch risks",
+    "raw_content": "submitted by /u/Sagnet [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.2732
+  },
+  {
+    "post_id": "1vjz49y",
+    "subreddit": "malware",
+    "title": "New Mac Malware intrested stealing Crypto Addresses and Crypto Mining Macs.",
+    "raw_content": "submitted by /u/Ioannisgn_ [link] [comments]",
+    "threat_category": "malware",
+    "sentiment": "negativo",
+    "compound": -0.5719
+  },
+  {
+    "post_id": "1vj4co9",
+    "subreddit": "malware",
+    "title": "Fake Cloudflare verification on deceased influencer’s site drops a PowerShell shellcode loader",
+    "raw_content": "submitted by /u/ThiccLatinaBabe [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.4767
+  },
+  {
+    "post_id": "1v81e03",
+    "subreddit": "malware",
+    "title": "Kratos PhaaS: How Turnkey Phishing Scales Microsoft 365 Account Takeovers",
+    "raw_content": "submitted by /u/Next-Profession-7495 [link] [comments]",
+    "threat_category": "phishing",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1vel4w2",
+    "subreddit": "malware",
+    "title": "INC Ransomware Emerges as Dominant Actor Exploiting SonicWall SMA 1000 Flaws",
+    "raw_content": "INC Ransomware Emerges as Dominant Actor Exploiting SonicWal — and the pattern underneath it is the real story. INC Ransomware Emerges as Dominant Actor Exploiting SonicWall SMA 1000 Flaws (The Hacker News). The fix is speed. Detect the anomalous action at runtime and cut the identity in under 50ms, before encryption spreads past the first host. Check out how RuntimeAI solves this at the runtime layer. #Ransomware #AISecurity #RuntimeSecurity #ZeroTrust #IncidentResponse submitted by /u/No-Conclusion3720 [link] [comments]",
+    "threat_category": "ransomware",
+    "sentiment": "negativo",
+    "compound": -0.8271
+  },
+  {
+    "post_id": "1v6jczu",
+    "subreddit": "malware",
+    "title": "Featured Chrome extension \"Planet Search\" (2M installs) routes every query to the nextgeeker[.]com hijacker network",
+    "raw_content": "While analyzing featured extensions on our beloved chrome web store I landed on Planet Search ( kadaohckdkghfaclhjmkmplebcdcnfnp ), Featured, 2M users, publisher FREE VPN PLANET SRL. https://chromewebstore.google.com/detail/planet-search/kadaohckdkghfaclhjmkmplebcdcnfnp The extensions has a 0-byte background.js with zero permissions. The whole mechanism is one `chrome_settings_overrides` search provider, so nothing shows up statically. It's all server-side. Declared provider is planet-search[.]com Tracing: planet-search[.]com/search/?q= 301 → sstmaster[.]com/edge/PN1021?q= 302 → nextgeeker[.]com/B151001.php?q=&src=PN1021 nextgeeker[.]com is flagged as a browser hijacker by multiple vendors (pcrisk, gridinsoft, others). Same publisher ships a ~1M-user VPN extension and a few others. Still tracing those, not going to characterize them until I have. Report: https://malext.io/reports/RoguePlanet submitted by /u/Huge-Skirt-6990 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.8348
+  },
+  {
+    "post_id": "1v1p6bv",
+    "subreddit": "malware",
+    "title": "SnappyClient Exposed: Remote Access, Data Theft, and a Blind Spot for Defenders",
+    "raw_content": "submitted by /u/Next-Profession-7495 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.4019
+  },
+  {
+    "post_id": "1vbdorb",
+    "subreddit": "malware",
+    "title": "Fake Interpol “Investigation” Emails Are Dropping Ransomware on Small Businesses",
+    "raw_content": "submitted by /u/scamdrill [link] [comments]",
+    "threat_category": "ransomware",
+    "sentiment": "negativo",
+    "compound": -0.4767
+  },
+  {
+    "post_id": "1v4a1bh",
+    "subreddit": "malware",
+    "title": "Banana RAT Evolves",
+    "raw_content": "Full report is available at https://any.run/cybersecurity-blog/banana-rat-evolution-analysis/ The exposed server at 198[.]245[.]53[.]26 gave a rare opportunity to compare two related Banana RAT branches through live infrastructure, sandbox telemetry, and recovered payloads. The older branch used ETW-themed paths, static Microsoft-looking names, and a typo-based pseudo-Microsoft C2 identity. The newer branch kept the same staging concept but moved to randomized install identifiers, better-structured SYSTEM persistence, and a WebSocket channel built around a hashed testewin.com subdomain. IoC: 198[.]245[.]53[.]26 https://app.any.run/tasks/96796146-688f-4b12-894c-236dadab8413 submitted by /u/rifteyy_ [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.1901
+  },
+  {
+    "post_id": "1vfhe03",
+    "subreddit": "malware",
+    "title": "🐁 Analyzing EtherRAT internals: Ethereum smart contract C2 in a Node.js backdoor (The Gentlemen)",
+    "raw_content": "EtherRAT off a The Gentlemen staging server. C2 resolution is the fun part: no hardcoded domains. The sample holds an Ethereum contract address + call selector and pulls the active C2 from the contract via public RPC endpoints. Every operator rotation is a contract write, so the full history is recoverable, five domains here. Tasking has no fixed command set. Any response over ten chars is thrown into a new async function with require, process, Buffer, etc. in scope, so arbitrary JS in the user context. Polls use random file-like paths (png/css/ico) to blend in, tell is a custom X-Bot-Server header. MSI drops a Node bootstrapper + XOR-encrypted backdoor, decoder writes plaintext and sets a Run key relaunching via headless conhost. Full write-up with hashes and IOCs: https://hunt.io/blog/the-gentlemen-etherrat-ethereum-smart-contract-c2 submitted by /u/Straight-Practice-99 [link] [comments]",
+    "threat_category": "malware",
+    "sentiment": "positivo",
+    "compound": 0.6486
+  },
+  {
+    "post_id": "1vikefx",
+    "subreddit": "malware",
+    "title": "ICMP-Ghost: Fileless C2 with ICMP & DNS Tunneling in Pure x64 Assembly | Suricata Bypassed",
+    "raw_content": "submitted by /u/Pale_Surround_3924 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1uzrxbq",
+    "subreddit": "malware",
+    "title": "Database of Malicious Browser Extensions continues to grow!",
+    "raw_content": "Hello everyone, A few months ago I shared my open database of malicious browser extensions. I'm happy to say it has now grown to over 500 malicious CRX samples . It started as a small research project, but it's continued to grow as I discover and collect more malicious extensions. My goal is to make it a useful resource for researchers, students, and anyone interested in browser extension security. One thing I'm working on next is making the data easier to consume in other tools. At the moment I'm considering exposing it in formats such as: JSON CSV I'm also thinking about adding things like an API or threat-intelligence style feeds if people think they'd be useful. I'd love to hear your thoughts: What format would you actually use? Are there any security tools or platforms you'd like to integrate it with? Is there any metadata you'd find useful that I'm currently missing? Repository: https://github.com/GherardoFiori/MaliciousBrowserExtensions Please remember these are live malicious browser extensions. Handle them with care. Project: https://exterminai.com/ Any feedback is appreciated. Thanks! submitted by /u/ElBuio [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.995
+  },
+  {
+    "post_id": "1v95kr8",
+    "subreddit": "malware",
+    "title": "Analyzing Flying Eagle Android RAT: APK Builder, C2 Panel, Banking Overlays, and a Successor Called Night Dragon",
+    "raw_content": "Chinese Android RAT framework combining an APK builder with a full C2 device management panel. Lures impersonate Public Security Bureau apps, banking services, adult content platforms, and social media. Post-install capabilities include live screen viewing, SMS and photo gallery access, audio recording, camera capture, keylogging, payment credential capture, and phishing overlays for Alipay, WeChat, ICBC, Agricultural Bank, and crypto wallets TokenPocket and imToken. Source code was stolen in early 2026 according to Telegram channel messages, with nearly 200 customer databases taken at the same time. Two channels now distribute patched builds. Night Dragon launched June 23 as a likely successor, adding black-screen mode to hide operator activity behind fake system update screens and automatic icon hiding post-install. SHA-256 hashes and full IOC tables in the report: https://hunt.io/blog/flying-eagle-android-rat-170-servers-night-dragon submitted by /u/Straight-Practice-99 [link] [comments]",
+    "threat_category": "phishing",
+    "sentiment": "negativo",
+    "compound": -0.5423
+  },
+  {
+    "post_id": "1v7ueie",
+    "subreddit": "malware",
+    "title": "Meccha Chameleon's Workshop Malware Is the Second Time This Exact Bypass Has Hit Steam This Month",
+    "raw_content": "submitted by /u/Consistent_Scene_178 [link] [comments]",
+    "threat_category": "malware",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1vmcf6y",
+    "subreddit": "malware",
+    "title": "WhiteCobra Malware on VS Code: Cloudflare C2 to Telegram Infostealer",
+    "raw_content": "submitted by /u/tame-impaled [link] [comments]",
+    "threat_category": "malware",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1vczz50",
+    "subreddit": "malware",
+    "title": "Zara data breach exposes 197,000 customers via Anodot analytics token compromise",
+    "raw_content": "A stolen analytics token became a customer breach. 197,400 records were exposed after a former third-party analytics provider was compromised. Emails, order IDs, SKUs, geolocation, purchase history, support tickets — all pulled through a machine credential nobody was watching. The vendor left. The token stayed live. The fix is boring and effective. Inventory every non-human identity that touches customer data. Bind each token to a policy on where it can call and what it can read. Tokenize PII before it leaves your perimeter so a stolen credential returns opaque values, not customer records. Keep an immutable audit trail so revocation is one query, not a forensic project. → www.runtimeai.io/trial #NonHumanIdentity #DataBreach #PII #SupplyChain #AISecurity submitted by /u/No-Conclusion3720 [link] [comments]",
+    "threat_category": "phishing",
+    "sentiment": "negativo",
+    "compound": -0.25
+  },
+  {
+    "post_id": "1vh4riw",
+    "subreddit": "malware",
+    "title": "PhantomEnigma shows the difference between blocking today’s C2 and tracking the operation behind it.",
+    "raw_content": "submitted by /u/Next-Profession-7495 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.3818
+  },
+  {
+    "post_id": "1vf3niv",
+    "subreddit": "malware",
+    "title": "Technical analysis of Parivahan App ( shared on ScamIndia by /u/ImpressiveYouth3990 couple of days back )",
+    "raw_content": "Fake mParivahan : Malware Analysis Report 422 Users are affected by it till now ( I was able to get the attackers admin panel ) Classification: Critical : Android SMS / UPI spyware RAT Method: Static reverse engineering of dropper + payload; no-root payload extraction; StringFog decryption; read-only Firebase C2 IOC enumeration 1. Executive summary Marketed as “M Parivahan” is a two-stage Android malware operation: Dropper ( com.ioaheishsbsb.ljgcdfhm ) : NP Manager–packed installer with a fake VPN / WebView UI that decrypts and sideloads an embedded APK ( output.apk ). Payload ( com.veaheishsbsb.kekskks ) : Sketchware-style SMS/call spyware with Firebase Realtime Database command-and-control and Telegram first-run alerts. The payload steals SMS and device telemetry, can forward SMS and calls, and can send SMS from the victim’s SIM (commonly abused for UPI / OTP fraud). At the time of analysis the Firebase panel was r everse engineered too and contained 422 client device IDs. 2. Sample identification Field Stage 1 (Dropper) Stage 2 (Payload) Package com.ioaheishsbsb.ljgcdfhm com.veaheishsbsb.kekskks Related / alias com.mr_fox.bhai Label: “M Parivahan” Application class NP Manager shell np.protect.assets.ShellApplication Protection NP Manager ( libnp_protect_res.so , xhook) NP Manager + StringFog XOR UI Fake VPN + file:///android_asset/main_ui.html Permission / settings-style UX Embedded artifact Logical asset output.apk (encrypted on disk) — SDK — minSdk 21, targetSdk 28, compileSdk 33 Build leftover — Synthetic names: dApp-binance-Trading-Signals Related package queried by dropper: com.avejfhdhd.android 3. Infection chain Victim sideloads fake “mParivahan” APK │ ▼ Dropper (NP Manager) decrypts embedded payload │ ▼ Writes temp_info.apk / temp_install.apk → installs com.veaheishsbsb.kekskks │ ▼ Payload requests SMS / phone permissions │ ▼ MyService enrolls device on Firebase + dumps ~50 SMS │ ▼ Telegram alert to operator bot/chat │ ▼ Listens on clients/<deviceId>/webhookEvent for remote commands Extraction note: Static decrypt of the packed dropper blob failed due to native crypto. Payload was recovered without device root by patching the unpack path to getExternalFilesDir and pulling /sdcard/Android/data/com.ioaheishsbsb.ljgcdfhm/files/temp_info.apk . 4. Capabilities Capability Severity Detail SMS theft Critical Intercepts inbound/outbound SMS; uploads to messages/<deviceId> SMS forward Critical Relays SMS to operator number ( SmsForwardTo ) Remote SMS send Critical Sends SMS from chosen SIM ( sendSms webhook) Call forwarding High USSD **21*<number># / ##21# Device fingerprinting High Model, Android version, root, storage, CPU, carrier, public IP, SIMs, battery, MSISDN Telegram notify High First-run HTML report to admin bot/chat Persistence High Foreground service, boot/alarm receivers, restart in onDestroy Keylogger flag Medium KeyLogger webhook present; appears stubbed/partial 5. Remote command surface Listener path: clients/<androidId>/webhookEvent/ Command key Fields Action callForward from , to , isActive Activate/deactivate call forward via USSD smsForward from , to , isActive Toggle SMS forward preference sendSms from , to , message , isSended Send SMS from victim SIM checkLiveness text=ping Reply pong under webhook KeyLogger isActive Preference flag (partial implementation) Presence uses clients/<id>/status with Firebase .info/connected + onDisconnect . 6. C2 infrastructure & IOCs 6.1 Firebase Item Value RTDB URL REMOVED I HAVE IT, IF ANY OFFICAL IS READING IT, PLEASE REACH OUT ASAP API key REMOVED I HAVE IT, IF ANY OFFICAL IS READING IT, PLEASE REACH OUT ASAP App ID REMOVED I HAVE IT, IF ANY OFFICAL IS READING IT, PLEASE REACH OUT ASAP Storage REMOVED I HAVE IT, IF ANY OFFICAL IS READING IT, PLEASE REACH OUT ASAP Top-level nodes clients , messages , devices , deviceMessages Clients observed 422 (2026-08-04, shallow enumeration) Rules posture Open / world-readable (IOC check succeeded without auth) 6.2 Firebase path map Path Purpose clients/<androidId> Device profile enrollment clients/<androidId>/status Online/offline clients/<androidId>/webhookEvent/* Command inbox messages/<androidId>/<timestamp> Stolen SMS .info/connected Connectivity watch 6.3 Telegram Item Value Endpoint https://api.telegram.org/bot<token>/sendMessage Bot token REMOVED I HAVE IT, IF ANY OFFICAL IS READING IT, PLEASE REACH OUT ASAP Admin chat ID REMOVED I HAVE IT, IF ANY OFFICAL IS READING IT, PLEASE REACH OUT ASAP Config source Raw resource Loda (obfuscated APK path ۦ/ۥ۟ ) { \"chatIDs\": [\"REMOVED I HAVE IT, IF ANY OFFICAL IS READING IT, PLEASE REACH OUT ASAP\"], \"tokens\": [\"REMOVED I HAVE IT, IF ANY OFFICAL IS READING IT, PLEASE REACH OUT ASAP\"], \"workSuccess\": 1 } Only one admin chat/token pair is embedded in the sample. 7. Attacker / mule phone numbers Not hardcoded in the APK. Numbers are pushed via Firebase webhooks at runtime. From live clients/*/webhookEvent ( smsForward / sendSms to fields), 2026-08-04: Number Hits Observed role 8789 ***** 6 Primary SMS forward target (strongest IOC) 9279********* 2 SMS forward + sendSms 8340********* 2 SMS forward 9522********* 2 sendSms 9279********* 1 sendSms (same line as 927********* with country code) 8712********* 1 each sendSms / UPI-style collect 9211********* 1 each sendSms / UPI-style collect 8291********* 1 sendSms / UPI-style collect Others (one-offs) 1 Mixed sendSms destinations Primary SMS-intercept candidate: 8789 ********* UPI collect destinations may be money-mule wallets rather than the panel operator’s personal line. 8. Persistence & stealth Components (payload) Activities: MainActivity , PermissionRequestActivity , DebugActivity Service: MyService (foreground; FOREGROUND_SERVICE_MEDIA_PLAYBACK ) Receivers: SmsReceiver , BootReceiver , AlarmReceiver , MultiEventReceiver , BatteryLevelReceiver Persistent notification text: “System Settings is Running…” Obfuscation / hardening NP Manager resource and path mangling StringFog (Base64 + XOR with key UTF-8 ) Dropper encrypted asset (non-standard ZIP compression) usesCleartextTraffic=\"true\" , allowBackup=\"true\" 9. Dangerous permissions (payload) INTERNET , ACCESS_NETWORK_STATE , ACCESS_WIFI_STATE , CHANGE_* READ_SMS , RECEIVE_SMS , SEND_SMS , DELETE_SMS , BROADCAST_SMS CALL_PHONE , READ_PHONE_STATE , READ_PHONE_NUMBERS RECEIVE_BOOT_COMPLETED , WAKE_LOCK FOREGROUND_SERVICE , FOREGROUND_SERVICE_MEDIA_PLAYBACK REQUEST_IGNORE_BATTERY_OPTIMIZATIONS , POST_NOTIFICATIONS 10. Key payload classes Class Role MyService Core RAT: enroll, listen, process commands SmsReceiver SMS intercept / forward / Firebase write TelegramBotUtils HTTP Telegram sendMessage AdminInfo Load bot token ↔ chat ID map callForwardingUtility USSD call forward SmsHelper / SMSRetriever Send SMS / dump inbox DeviceInfoUtil / SimInfoUtil Fingerprint + public IP SharedPrefManager isFirst , isSmsForward , SmsForwardTo , flags BootReceiver / AlarmReceiver Keep-alive 11. MITRE ATT&CK (Mobile) mapping ID Technique Evidence T1660 Phishing / fake app mParivahan brand abuse T1406 Obfuscated files or information NP Manager + StringFog T1624 Event triggered execution BOOT_COMPLETED , SMS_RECEIVED T1517 Access notifications / SMS SMS permissions + receivers T1437 Application layer protocol Firebase + Telegram HTTPS T1636 Protected user data SMS, MSISDN, SIM info T1428 Exploit via SMS / USSD sendSms , **21* T1409 Stored application data SharedPreferences C2 flags T1625 Hijack execution flow / packer ShellApplication dropper submitted by /u/HealthyFlamingo5414 [link] [comments]",
+    "threat_category": "malware",
+    "sentiment": "positivo",
+    "compound": 0.8452
+  },
+  {
+    "post_id": "1vdit0y",
+    "subreddit": "malware",
+    "title": "Fake Claude Install Guide Delivers Six-Stage macOS Stealer and RAT, Huntress Finds",
+    "raw_content": "submitted by /u/dar-mit [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.7003
+  },
+  {
+    "post_id": "1vnmye4",
+    "subreddit": "netsec",
+    "title": "When You Pay the Ransom - Taking Apart an Interlock ESXi Decryptor | Maldbg",
+    "raw_content": "submitted by    /u/tohitsugu  \n [link]   [comments]",
+    "threat_category": "ransomware",
+    "sentiment": "negativo",
+    "compound": -0.1027
+  },
+  {
+    "post_id": "1vhh5xw",
+    "subreddit": "netsec",
+    "title": "Claude Code RCE: How a Malicious PR Triggers Code Execution",
+    "raw_content": "Abusing the trust boundary in Claude Code for RCE. Trust is never broken and that opens up a few avenues for abuse. Simply opening claude code on a PR can be enough to silently trigger attacker payloads. submitted by /u/kev-thehermit [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.411
+  },
+  {
+    "post_id": "1vnm0b2",
+    "subreddit": "netsec",
+    "title": "CSS:the bomb inside your inbox",
+    "raw_content": "Here's my research in using CSS for offence. There are loads of techniques including stealing passwords from Outlook from an email by spoofing the login screen.\n \n    submitted by    /u/garethheyes  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.8442
+  },
+  {
+    "post_id": "1vlbhe1",
+    "subreddit": "netsec",
+    "title": "Mandatory User Profile for Persistence & EDR Evasion",
+    "raw_content": "submitted by /u/netbiosX [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.0772
+  },
+  {
+    "post_id": "1vmadcw",
+    "subreddit": "netsec",
+    "title": "CVE-2026-53360: KVM SEV-SNP guest-to-host heap OOB and analysis of the upstream fix",
+    "raw_content": "submitted by /u/unknownhad [link] [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1vj2hiw",
+    "subreddit": "netsec",
+    "title": "Analyzing a Multi-Stage PowerShell Payload Chain",
+    "raw_content": "I recently analyzed a multi-stage PowerShell payload delivery chain involving heavily obfuscated PowerShell loaders and remotely hosted payloads. The analysis covers PowerShell deobfuscation, hidden execution, Base64/XOR decoding, a decoy “Verification complete!” prompt, payload delivery, and IOCs. Initial indicators: 203[.]188[.]171[.]166 dorenzaa[.]com submitted by /u/anuraggawande [link] [comments]",
+    "threat_category": "malware",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1ulbf96",
+    "subreddit": "netsec",
+    "title": "/r/netsec's Q3 2026 Information Security Hiring Thread",
+    "raw_content": "Overview\n If you have open positions at your company for information security professionals and would like to hire from the /r/netsec user base, please leave a comment detailing any open job listings at your company.\n We would also like to encourage you to post internship positions as well. Many of our readers are currently in school or are just finishing their education.\n Please reserve top level comments for those posting open positions.\n Rules & Guidelines\n Include the company name in the post. If you want to be topsykret, go recruit elsewhere. Include the geographic location of the position along with the availability of relocation assistance or remote work.\n  \nIf you are a third party recruiter, you must disclose this in your posting.\n Please be thorough and upfront with the position details.\n Use of non-hr'd (realistic) requirements is encouraged.\n While it's fine to link to the position on your companies website, provide the important details in the comment.\n Mention if applicants should apply officially through HR, or directly through you.\n Please clearly list citizenship, visa, and security clearance requirements.\n  \nYou can see an example of acceptable posts by perusing past hiring threads.\n Feedback\n Feedback and suggestions are welcome, but please don't hijack this thread (use moderator mail instead.)\n    submitted by    /u/netsec_burn  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.969
+  },
+  {
+    "post_id": "1vjfos6",
+    "subreddit": "netsec",
+    "title": "DEFCON: New Red Team Tactic",
+    "raw_content": "Evil Fonts deceive a viewer by rendering a different letter than is actually on the disk. Evil Fonts can poison HTML, DOCX, PDFs, and anywhere else you can bring your own fonts. Works great in Windows corporate networks for bypassing security tooling, initial access through JavaScript free click fix (beats mitm web security tooling), and leaving traps around the network to harvest shells. Imagine thinking you are copying whoami but what is actually on the disk is rm -rf \\~ Demos: (Use desktop) https://doctoreww.github.io/EvilFontTool/ For the demos, copy and paste the HTML/DOCX to a notepad to remove the evil fonts. For the AI ones imagine your security tooling inspects the benign text on disk, but shows the obviously malicious extortion to the user. Labs: https://github.com/DoctorEww/EvilFontTool/blob/main/labs%2FREADME.md Lab Walkthrough: https://github.com/DoctorEww/EvilFontTool/blob/main/labs%2Fwalkthrough.md Some evil font uses: Tamper homework to make it so students poison AI queries Poison help desk documentation Bypass email filters Clickfix Beat resume AI filters submitted by /u/Prize_Region5503 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.9552
+  },
+  {
+    "post_id": "1vn94sg",
+    "subreddit": "netsec",
+    "title": "Can AI do novel security research? Meet the HTTP Terminator",
+    "raw_content": "submitted by /u/albinowax [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.5719
+  },
+  {
+    "post_id": "1vg20wg",
+    "subreddit": "netsec",
+    "title": "New Linux Bridge STP Vulnerability",
+    "raw_content": "A use-after-free vulnerability in the Linux kernel bridge (net/bridge) Spanning Tree Protocol (STP) implementation. A bridge that is administratively down while kernel STP is enabled, together with a port driven into the LEARNING state, arms periodic STP timers without an IFF_UP guard. The teardown path taken by dellink never synchronously deletes those timers, so the backing net_device (which embeds struct net bridge as private data) is freed with a timer list still queued on a per-CPU timer base. The result is a slab use-after-free in the kmalloc-cg-8k cache. submitted by /u/SSDisclosure [link] [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "positivo",
+    "compound": 0.0717
+  },
+  {
+    "post_id": "1vi8ibp",
+    "subreddit": "netsec",
+    "title": "tl;dv (Too Lazy; Didn't Validate): 181,874 Meetings Left Wide Open",
+    "raw_content": "The meetings collection has no tenant isolation. Any authenticated tl;dv user can query every meeting across every account on the platform. Each meeting record hands you the creator's email address, the conference ID (which is a joinable Google Meet or Teams room), the provider, the recording status, and timestamps. I queried the Firestore meetings collection and saw there were 181,874 meeting records belonging to 84,312 unique users across 35,003 email domains . submitted by /u/kochurshak [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.7506
+  },
+  {
+    "post_id": "1vktfi3",
+    "subreddit": "netsec",
+    "title": "Inside a Russian-speaking operator's toolkit for compromising Ukrainian IP cameras",
+    "raw_content": "Hunt.io researchers analyzed two open directories recovered through Attack Capture system and reconstructed the tooling one operator used to find, exploit, and view internet-exposed cameras in Ukraine. Technical highlights: A custom FastAPI/Docker project the operator named camview, which wraps the open-source Ingram scanner, brute-forces camera credentials over HTTP and RTSP (3,811 pair dictionary), and transcodes RTSP to MJPEG for browser viewing Ingram targets known camera CVEs: CVE-2017-7921 and CVE-2021-36260 (Hikvision), CVE-2021-33044/33045 (Dahua), CVE-2020-25078 (D-Link), CVE-2020-25169 (Reolink) The operator's logs recorded live viewing sessions from 58 Ukrainian cameras, with session lengths, frame counts, and frame rates A proxy script authenticated to a compromised OpenCart admin panel and relayed the operator's traffic through the victim network A second, separately operated directory was linked only by the same Ingram scanner. It chained TP-Link Archer CVEs (CVE-2024-53375, CVE-2024-57049) and MikroTik API brute-forcing to turn edge devices into SOCKS5 proxies reporting to a chisel listener on port 4444 No state attribution. Full analysis, IOCs, and ATT&CK mapping in the writeup submitted by /u/Straight-Practice-99 [link] [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "negativo",
+    "compound": -0.7783
+  },
+  {
+    "post_id": "1vilqda",
+    "subreddit": "netsec",
+    "title": "RovoBlast: How One Click Triggered Atlassian’s AI Assistant to Leak Data",
+    "raw_content": "submitted by /u/lohacker0 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.34
+  },
+  {
+    "post_id": "1vcngz2",
+    "subreddit": "netsec",
+    "title": "r/netsec monthly discussion & tool thread",
+    "raw_content": "Questions regarding netsec and discussion related directly to netsec are welcome here, as is sharing tool links.\n Rules & Guidelines\n  \nAlways maintain civil discourse. Be awesome to one another - moderator intervention will occur if necessary.\n Avoid NSFW content unless absolutely necessary. If used, mark it as being NSFW. If left unmarked, the comment will be removed entirely.\n If linking to classified content, mark it as such. If left unmarked, the comment will be removed entirely.\n Avoid use of memes. If you have something to say, say it with real words.\n All discussions and questions should directly relate to netsec.\n No tech support is to be requested or provided on r/netsec.\n  \nAs always, the content & discussion guidelines should also be observed on r/netsec.\n Feedback\n Feedback and suggestions are welcome, but don't post it here. Please send it to the moderator inbox.\n    submitted by    /u/albinowax  \n [link]   [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.8151
+  },
+  {
+    "post_id": "1vir8aq",
+    "subreddit": "netsec",
+    "title": "Write Once, Shell Everywhere - Turning Arbitrary File Writes into RCE (DEF CON Bug Bounty Village)",
+    "raw_content": "Write once, shell everywhere. Sun Microsystems didn't mean it like this. Talk from today at DEF CON's Bug Bounty Village. Full technique catalog graded for distroless containers, an errno path oracle for black-box target fingerprinting, and three minimal-guessing techniques: bash fd/255, Rails schema_cache.yml deserialization, and a Node.js worker path overwrite without process restart. submitted by /u/ZealousidealHunter80 [link] [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "negativo",
+    "compound": -0.2755
+  },
+  {
+    "post_id": "1vf5zwc",
+    "subreddit": "netsec",
+    "title": "HEVD: From Stack Overflows to Modern Pool Grooming",
+    "raw_content": "Hi. I just published a four-part deep dive into windows kernel exploitation, progressing from classic control flow hijacking to modern pool grooming and pure data-only attacks on windows 11. I wanted to highlight the real-world friction of modern security measures. A lot of the focus is on mitigating LFH randomization, and avoiding IoCompleteRequest bugchecks by dodging ReadFile for arbitrary reads. Hope this is helpful or insightful to some of you looking into modern kernel exploitation. submitted by /u/Important_Map6928 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.5859
+  },
+  {
+    "post_id": "1vjxr66",
+    "subreddit": "netsec",
+    "title": "When terrible disclosure from the vendor results in zero days plus a fun dive in to bypassing full disk encryption",
+    "raw_content": "submitted by /u/kev-thehermit [link] [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "positivo",
+    "compound": 0.0516
+  },
+  {
+    "post_id": "1vfpmhg",
+    "subreddit": "netsec",
+    "title": "Bugtraq is back 🥹",
+    "raw_content": "submitted by /u/loselasso [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "neutral",
+    "compound": 0.0
+  },
+  {
+    "post_id": "1vndp8e",
+    "subreddit": "netsec",
+    "title": "From Unauthenticated API to Grid Risk: A Hybrid Inverter Vulnerability Explained",
+    "raw_content": "Auth Bypass. Commands over CAN Bus to internal components. Protection mechanisms disabled and configuration changes. Impact: damage connected devices, permanent DoS to the inverter itself, fines, and even risk to the lives of grid technicians. proprietary communication protocols and file formats. RX architecture reverse engineering. submitted by /u/_solid_snail [link] [comments]",
+    "threat_category": "vulnerabilidad",
+    "sentiment": "negativo",
+    "compound": -0.8074
+  },
+  {
+    "post_id": "1vm95nk",
+    "subreddit": "netsec",
+    "title": "ERPNext's Document Follow feature exposed unauthorized data",
+    "raw_content": "Chaining 3 CVEs to exfiltrate sensitive ERP data. submitted by /u/TeraTrox_ [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "negativo",
+    "compound": -0.0772
+  },
+  {
+    "post_id": "1vi380e",
+    "subreddit": "netsec",
+    "title": "TrustFall: When the Trusted Execution Environment Cannot Be Trusted",
+    "raw_content": "ByteRay researchers have published a blog on a set of vulnerabilities they are calling TrustFall, and the findings land hard for any company that treats the Trusted Execution Environment as the part of a device you do not have to worry about. OP-TEE is the walled-off Secure World that phones, TVs, cars, and industrial gear lean on to guard keys, DRM, and identity, and the whole point of paying for that hardware isolation is the promise that even a compromised operating system cannot reach inside. TrustFall shows that promise was not as solid as buyers assumed. The researchers found several flaws that let the untrusted side reach into or knock over the Secure World, which is exactly the outcome the design exists to prevent. The bugs have since been fixed upstream, so patched builds are available, but the uncomfortable takeaway for vendors is that the vault they were told to trust had a way in, and \"it runs in the TEE\" is no longer an answer on its own. submitted by /u/Emergency_Stable_923 [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.7357
+  },
+  {
+    "post_id": "1vijs4n",
+    "subreddit": "netsec",
+    "title": "SCTPhantom: An 18-Year-Old SCTP ASCONF Transport Use-After-Free · Tencent Zhuque Lab",
+    "raw_content": "Yes, given that the legacy SCT protocol has known security vulnerabilities such as sctphantom, the industry strongly recommends deprecating it and migrating to more secure modern standards to ensure system security. submitted by /u/thobiso [link] [comments]",
+    "threat_category": "no_clasificado",
+    "sentiment": "positivo",
+    "compound": 0.9216
+  }
+]
