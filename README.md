@@ -147,22 +147,24 @@ Estudio de evaluacion sobre publicaciones reales del corpus, en tandas (censo):
   G. Fracchia), sin LLM, con adjudicacion conjunta de 10 discrepancias
   (`registro_sesiones.md`). Resultados: `resultados_tanda1.md`.
 - **Censo fusionado (113 posts = corpus completo al corte del 3/9)**:
-  `censo_eval*_113.csv` + `resultados_censo_preliminar_113.md`. Protocolo mixto declarado
-  (ver nota metodologica dentro). Pendiente: adjudicacion de las 22 discrepancias del piloto
-  (`discrepancias_piloto.csv` + plantilla).
+  `censo_eval*_113.csv`, `censo_resueltas.csv` (32 adjudicadas: 10 de tanda 1 + 22 del piloto,
+  todas estas ultimas a favor de la etiqueta E1) y `censo_gold_humano_113.csv` (gold final
+  humano). Protocolo mixto declarado (ver nota metodologica en `resultados_censo_final_113.md`).
 
-Resultados del censo fusionado (preliminar, pre-adjudicacion del piloto):
+Resultados del censo completo (n=113, consenso 113/113, sin exclusiones):
 
 - Acuerdo inter-evaluador (pre-adjudicacion): kappa categoria **0.876** (IC 95%
-  [0.798, 0.943]) | sentimiento **0.469**.
-- Pipeline vs consenso humano, categoria: **F1 macro 0.513 / micro 0.464** (n=110),
-  V de Cramer 0.617, p < 0.0001.
-- Pipeline vs consenso humano, sentimiento: **F1 micro 0.247** (n=93) - VADER resulta
-  inoperante en el dominio tecnico, consistente con lo declarado en la tesis.
+  [0.798, 0.943]) | sentimiento **0.469** (IC 95% [0.281, 0.655]).
+- Pipeline vs consenso humano, categoria: **F1 macro 0.516 / micro 0.469** (n=113),
+  V de Cramer 0.618, p < 0.0001.
+- Pipeline vs consenso humano, sentimiento: **F1 micro 0.230** (n=113, p = 0.155: sin
+  asociacion) - VADER resulta inoperante en el dominio tecnico, consistente con lo
+  declarado en la tesis.
 
 Herramientas: `exportar_muestra.py` (censo en tandas, semilla reproducible),
 `generar_discrepancias.py`, `evaluar_ground_truth.py` (kappa, F1, IC bootstrap, chi-cuadrado,
-V de Cramer; stdlib pura). Guia completa: `GUIA_ETIQUETADO.md`.
+V de Cramer; stdlib pura). Guia completa: `GUIA_ETIQUETADO.md`. Registros:
+`registro_sesiones.md` (tanda 1) y `registro_adjudicacion_piloto.md` (piloto, 28/9/2026).
 
 ## Limitaciones documentadas
 
