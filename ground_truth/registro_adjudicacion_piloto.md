@@ -22,7 +22,7 @@ sentimiento (sin exclusiones)**.
 
 | Sesión | Quién | Fecha | Inicio | Fin | Guardado de la resolución |
 |---|---|---|---|---|---|
-| Adjudicación de las 22 discrepancias del piloto | E1: M. Scopel + E2: G. Fracchia (llamada) | 28/9/2026 | _(a anotar)_ | _(a anotar)_ | 28/9/2026 23:57 ART |
+| Adjudicación de las 22 discrepancias del piloto | E1: M. Scopel + E2: G. Fracchia (llamada) | 28/9/2026 | 23:30 | 23:54 (~24 min) | 28/9/2026 23:57 ART |
 
 Condiciones: etiquetas finales acordadas por discusión conjunta sobre el material de
 `discrepancias_piloto.csv`, sin acceso a las etiquetas del pipeline durante la decisión.
