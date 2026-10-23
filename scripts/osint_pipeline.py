@@ -76,13 +76,18 @@ TIEBREAK_ORDER = ("vulnerabilidad", "malware", "phishing", "ransomware", "otro")
 
 
 def _word_regex(term: str) -> str:
-    """Expresión regular de palabra completa para un término (multipalabra opcional)."""
-    parts = [re.escape(p) for p in term.split()]
-    return r"(?<![a-z0-9])" + r"\s+".join(parts) + r"(?![a-z0-9])"
+    words = term.split()
+    last = words[-1]
+    if last.endswith("y") and last[-2:-1] not in "aeiou":
+        last_rx = re.escape(last[:-1]) + r"(?:y|ies)"
+    else:
+        last_rx = re.escape(last) + r"(?:e?s)?"
+    core = r"\s+".join([re.escape(w) for w in words[:-1]] + [last_rx])
+    return r"(?<![a-z0-9])" + core + r"(?![a-z0-9])"
 
 
 _THREAT_REGEXES = {
-    cat: [re.compile(_word_regex(t)) for t in terms]
+    cat: [re.compile(_word_regex(t), re.IGNORECASE) for t in terms]
     for cat, terms in THREAT_KEYWORDS.items()
 }
 
