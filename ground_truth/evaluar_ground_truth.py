@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
-"""evaluar_ground_truth.py — métricas de la Fase 4 (ground truth, v3).
-
-v3 (2026-09-03): reporta el kappa inter-evaluador PRE-adjudicación (el
-acuerdo genuino entre etiquetadores individuales) además del consenso
-post-adjudicación; valida que el archivo --resuelto tenga etiquetas
-completas y válidas antes de aplicarlo (antes una etiqueta vacía se
-normalizaba en silencio como no_clasificado y corrompía el reporte).
+"""evaluar_ground_truth.py — métricas de la Fase 4 (ground truth, v2).
 
 v2 (2026-09-02): agrega intervalos de confianza bootstrap al 95 % para el
 kappa inter-evaluador y para los F1 (micro y macro) del pipeline vs.
@@ -14,10 +8,8 @@ consenso; corrige el conteo de excluidos (antes hardcodeado en 60).
 Compara las etiquetas humanas (eval1/eval2) entre sí y contra las del
 pipeline (gold). Calcula y reporta:
 
-  - Kappa de Cohen pre-adjudicación (acuerdo inter-evaluador) + IC.
-  - Acuerdo evaluador vs. pipeline (etiquetas individuales) + kappa.
-  - Consenso humano (post-adjudicación con --resuelto) y conteo de
-    discrepancias resueltas.
+  - Kappa de Cohen (acuerdo inter-evaluador y evaluador vs. pipeline) + IC.
+  - Consenso humano (donde E1 == E2) y conteo de discrepancias.
   - Matriz de confusión del pipeline vs. consenso humano, por categoría y
     por sentimiento.
   - Precisión, exhaustividad (recall) y F1 por clase + macro/micro + IC.
@@ -27,10 +19,12 @@ pipeline (gold). Calcula y reporta:
 Sin dependencias externas (stdlib). Genera un reporte Markdown.
 
 Uso:
-    python evaluar_ground_truth.py --eval1 muestra_f4_t1_eval1.csv \
-        --eval2 muestra_f4_t1_eval2.csv --gold muestra_f4_t1_gold.csv \
-        [--resuelto discrepancias_t1_resueltas.csv] \
-        [--perm 2000] [--bootstrap 2000] [--out resultados_tanda1.md]
+    python evaluar_ground_truth.py [--eval1 muestra200_eval1.csv]
+                                   [--eval2 muestra200_eval2.csv]
+                                   [--gold muestra200_gold.csv]
+                                   [--resuelto discrepancias_resueltas.csv]
+                                   [--perm 2000] [--bootstrap 2000]
+                                   [--out resultados_ground_truth.md]
 """
 
 import argparse
@@ -210,7 +204,7 @@ def write_report(out_path: str, sections: list, nota: str = None) -> None:
     lines = [
         "# Resultados ground truth (Fase 4)",
         "",
-        "**Generado por:** `evaluar_ground_truth.py` (v3)",
+        "**Generado por:** `evaluar_ground_truth.py` (v2)",
         "",
     ]
     for block in sections:
@@ -246,43 +240,22 @@ def main(argv=None) -> None:
     gold = load_gold(args.gold)
     todos = set(e1) | set(e2) | set(gold)
     pids = sorted(set(e1) & set(e2) & set(gold))
+
+    # Kappa inter-evaluador: SIEMPRE sobre las etiquetas crudas, pre-adjudicación
+    # (si se sobreescribiera antes de este calculo con --resuelto, kappa saldria
+    # artificialmente 1.0 para los items resueltos, porque e1==e2 por construccion).
     n = len(pids)
+    cats_e1_raw = [e1[p]["cat"] for p in pids]
+    cats_e2_raw = [e2[p]["cat"] for p in pids]
+    sent_e1_raw = [e1[p]["sent"] for p in pids]
+    sent_e2_raw = [e2[p]["sent"] for p in pids]
 
-    # --- Etiquetas individuales crudas (PRE-adjudicacion)
-    pre_cats_e1 = [e1[p]["cat"] for p in pids]
-    pre_cats_e2 = [e2[p]["cat"] for p in pids]
-    pre_sent_e1 = [e1[p]["sent"] for p in pids]
-    pre_sent_e2 = [e2[p]["sent"] for p in pids]
-    pre_cats_gold = [gold[p]["cat"] for p in pids]
-    pre_sent_gold = [gold[p]["sent"] for p in pids]
-
-    # --- Acuerdo inter-evaluador PRE-adjudicacion (con IC bootstrap)
-    k_pre_cat = cohen_kappa(pre_cats_e1, pre_cats_e2)
-    k_pre_sent = cohen_kappa(pre_sent_e1, pre_sent_e2)
-    ci_kcat = bootstrap_ci(list(zip(pre_cats_e1, pre_cats_e2)), "kappa", CATEGORIAS, args.bootstrap)
-    ci_ksent = bootstrap_ci(list(zip(pre_sent_e1, pre_sent_e2)), "kappa", SENTIMIENTOS, args.bootstrap)
-    ndisc_pre_cat = sum(1 for a, b in zip(pre_cats_e1, pre_cats_e2) if a != b)
-    ndisc_pre_sent = sum(1 for a, b in zip(pre_sent_e1, pre_sent_e2) if a != b)
-
-    # --- Adjudicacion (post): pisa las etiquetas individuales con lo acordado
-    n_resueltos = 0
     if args.resuelto:
         resuelto = load_eval(args.resuelto)
-        invalidos = [
-            (pid, resuelto[pid]["cat"], resuelto[pid]["sent"])
-            for pid in pids
-            if pid in resuelto
-            and (resuelto[pid]["cat"] not in CATEGORIAS or resuelto[pid]["sent"] not in SENTIMIENTOS)
-        ]
-        if invalidos:
-            for pid, cat, sent in invalidos:
-                print(f"ERROR: etiqueta invalida/vacia en --resuelto para {pid}: cat='{cat}' sent='{sent}'")
-            raise SystemExit("El archivo --resuelto debe tener threat_category y sentiment completos y validos en todas las filas")
         for pid in pids:
             if pid in resuelto:
                 e1[pid] = resuelto[pid]
                 e2[pid] = resuelto[pid]
-                n_resueltos += 1
 
     cats_e1 = [e1[p]["cat"] for p in pids]
     cats_e2 = [e2[p]["cat"] for p in pids]
@@ -302,28 +275,30 @@ def main(argv=None) -> None:
         f"- Excluidos por falta de etiqueta en algún archivo: {len(todos) - n}",
     ])
 
-    # --- Acuerdo inter-evaluador PRE-adjudicacion (con IC bootstrap)
+    # --- Acuerdo inter-evaluador, PRE-ADJUDICACION (con IC bootstrap)
+    k_cat = cohen_kappa(cats_e1_raw, cats_e2_raw)
+    k_sent = cohen_kappa(sent_e1_raw, sent_e2_raw)
+    ci_kcat = bootstrap_ci(list(zip(cats_e1_raw, cats_e2_raw)), "kappa", CATEGORIAS, args.bootstrap)
+    ci_ksent = bootstrap_ci(list(zip(sent_e1_raw, sent_e2_raw)), "kappa", SENTIMIENTOS, args.bootstrap)
+    acuerdo_bruto_cat = sum(1 for a, b in zip(cats_e1_raw, cats_e2_raw) if a == b)
+    acuerdo_bruto_sent = sum(1 for a, b in zip(sent_e1_raw, sent_e2_raw) if a == b)
     sections.append([
-        "## 2. Acuerdo inter-evaluador (humanos, pre-adjudicacion)",
+        "## 2. Acuerdo inter-evaluador (humanos, pre-adjudicación)",
         "",
-        f"- Categoria de amenaza: **κ = {k_pre_cat:.3f}** ({kappa_label(k_pre_cat)}), IC 95 % [{ci_kcat[0]:.3f}, {ci_kcat[1]:.3f}]",
-        f"- Sentimiento: **κ = {k_pre_sent:.3f}** ({kappa_label(k_pre_sent)}), IC 95 % [{ci_ksent[0]:.3f}, {ci_ksent[1]:.3f}]",
+        f"- Categoría de amenaza: **κ = {k_cat:.3f}** ({kappa_label(k_cat)}), IC 95 % [{ci_kcat[0]:.3f}, {ci_kcat[1]:.3f}]",
+        f"- Sentimiento: **κ = {k_sent:.3f}** ({kappa_label(k_sent)}), IC 95 % [{ci_ksent[0]:.3f}, {ci_ksent[1]:.3f}]",
         "",
-        f"Acuerdo bruto: categoria {n - ndisc_pre_cat}/{n} ({100.0 * (n - ndisc_pre_cat) / n:.1f} %) | sentimiento {n - ndisc_pre_sent}/{n} ({100.0 * (n - ndisc_pre_sent) / n:.1f} %).",
+        f"Acuerdo bruto: categoría {acuerdo_bruto_cat}/{n} ({100.0*acuerdo_bruto_cat/n:.1f} %) | sentimiento {acuerdo_bruto_sent}/{n} ({100.0*acuerdo_bruto_sent/n:.1f} %).",
         "",
         f"Interpretación Landis & Koch (1977). IC percentil bootstrap ({args.bootstrap} remuestreos). Objetivo del estudio: κ > 0.70.",
-        *(
-            [f"Discrepancias resueltas por adjudicación conjunta: **{n_resueltos}** posts (el kappa de esta sección es el acuerdo ANTES de esa sesión)."]
-            if args.resuelto
-            else []
-        ),
+        f"El kappa de esta sección es el acuerdo ANTES de la adjudicación conjunta de discrepancias.",
     ])
 
-    # --- Evaluador vs pipeline (etiquetas individuales crudas)
-    k_e1g_cat = cohen_kappa(pre_cats_e1, pre_cats_gold)
-    k_e2g_cat = cohen_kappa(pre_cats_e2, pre_cats_gold)
-    k_e1g_sent = cohen_kappa(pre_sent_e1, pre_sent_gold)
-    k_e2g_sent = cohen_kappa(pre_sent_e2, pre_sent_gold)
+    # --- Evaluador vs pipeline
+    k_e1g_cat = cohen_kappa(cats_e1, cats_gold)
+    k_e2g_cat = cohen_kappa(cats_e2, cats_gold)
+    k_e1g_sent = cohen_kappa(sent_e1, sent_gold)
+    k_e2g_sent = cohen_kappa(sent_e2, sent_gold)
     sections.append([
         "## 3. Acuerdo evaluador vs. pipeline",
         "",
@@ -336,23 +311,22 @@ def main(argv=None) -> None:
         ),
     ])
 
-    # --- Consenso (post-adjudicacion si hubo --resuelto)
+    # --- Consenso
     cons_cat = [cats_e1[i] if cats_e1[i] == cats_e2[i] else "DISCREPANCIA" for i in range(n)]
     cons_sent = [sent_e1[i] if sent_e1[i] == sent_e2[i] else "DISCREPANCIA" for i in range(n)]
     ndisc_cat = sum(1 for c in cons_cat if c == "DISCREPANCIA")
     ndisc_sent = sum(1 for c in cons_sent if c == "DISCREPANCIA")
-    consenso_linea = (
-        f"Resueltas por adjudicación conjunta: {n_resueltos} | sin resolver: {ndisc_cat + ndisc_sent}"
-        if args.resuelto
-        else "Sin sesión de adjudicación (correr con --resuelto para resolverlas)."
-    )
+    ndisc_cat_pre = n - acuerdo_bruto_cat
+    ndisc_sent_pre = n - acuerdo_bruto_sent
+    nres = len(set(resuelto)) if args.resuelto else 0
     sections.append([
         "## 4. Consenso humano y discrepancias",
         "",
         f"- Ítems con consenso en categoría: **{n - ndisc_cat} / {n}** ({100.0 * (n - ndisc_cat) / n:.1f}%)",
         f"- Ítems con consenso en sentimiento: **{n - ndisc_sent} / {n}** ({100.0 * (n - ndisc_sent) / n:.1f}%)",
         f"- Discrepancias de categoría: **{ndisc_cat}** | de sentimiento: **{ndisc_sent}**",
-        f"- Pre-adjudicación el consenso era: categoría {n - ndisc_pre_cat}/{n} | sentimiento {n - ndisc_pre_sent}/{n}. {consenso_linea}",
+        f"- Pre-adjudicación el consenso era: categoría {acuerdo_bruto_cat}/{n} | sentimiento {acuerdo_bruto_sent}/{n}. "
+        f"Resueltas por adjudicación conjunta: {nres} | sin resolver (categoría): {ndisc_cat} | sin resolver (sentimiento): {ndisc_sent}",
         "",
         "Los ítems con discrepancia se excluyen del análisis de desempeño (sección 5) salvo que se resuelvan con `--resuelto`.",
     ])
@@ -398,9 +372,9 @@ def main(argv=None) -> None:
 
     write_report(args.out, sections, args.nota)
     print(f"Reporte generado: {args.out}")
-    print(f"  Kappa categoría (E1 vs E2, pre-adjudicación): {k_pre_cat:.3f} IC95 [{ci_kcat[0]:.3f}, {ci_kcat[1]:.3f}]")
-    print(f"  Kappa sentimiento (E1 vs E2, pre-adjudicación): {k_pre_sent:.3f} IC95 [{ci_ksent[0]:.3f}, {ci_ksent[1]:.3f}]")
-    print(f"  Discrepancias pre-adjudicación: categoría {ndisc_pre_cat} | sentimiento {ndisc_pre_sent} | resueltas: {n_resueltos}")
+    print(f"  Kappa categoría (E1 vs E2): {k_cat:.3f} IC95 [{ci_kcat[0]:.3f}, {ci_kcat[1]:.3f}]")
+    print(f"  Kappa sentimiento (E1 vs E2): {k_sent:.3f} IC95 [{ci_ksent[0]:.3f}, {ci_ksent[1]:.3f}]")
+    print(f"  Discrepancias categoría: {ndisc_cat} | sentimiento: {ndisc_sent}")
 
 
 if __name__ == "__main__":

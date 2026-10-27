@@ -150,28 +150,57 @@ Estudio de evaluacion sobre publicaciones reales del corpus, en tandas (censo):
   `censo_eval*_113.csv`, `censo_resueltas.csv` (32 adjudicadas: 10 de tanda 1 + 22 del piloto,
   todas estas ultimas a favor de la etiqueta E1) y `censo_gold_humano_113.csv` (gold final
   humano). Protocolo mixto declarado (ver nota metodologica en `resultados_censo_final_113.md`).
+- **Tanda 2 (526 posts, etiquetada 20-21/10/2026)**: muestra estratificada sobre el corpus
+  ampliado (1.956 publicaciones al corte del 13/10; estrato A = las 276 phishing/ransomware
+  del pipeline + estrato B = 250 proporcional por subreddit; seed reproducible en
+  `exportar_tanda2_estratificado.py`, corpus fuente en `posts_dataset_tanda2_1956_completo.csv`).
+  Dos evaluadores humanos independientes, sin LLM: 137 discrepancias
+  (`discrepancias_tanda2.csv`) resueltas por adjudicacion conjunta el 22/10/2026
+  (`resuelto_tanda2_137.csv`).
+- **Censo expandido (639 = 113 + 526, definitivo, 22/10/2026)**: etiquetado crudo por
+  evaluador (`eval1_639.csv`, `eval2_639.csv`), resolucion total (`resuelto_639.csv`:
+  169 adjudicadas = 32 del censo original + 137 de tanda 2), etiquetas del pipeline
+  (`gold_639.csv` = `censo_gold_pipeline_113.csv` + `muestra_f4_t2_gold.csv`), texto fuente
+  (`posts_dataset_113_completo.csv` + `posts_dataset_tanda2_1956_completo.csv`) y reporte
+  (`resultados_censo_639.md`).
 
-Resultados del censo completo (n=113, consenso 113/113, sin exclusiones):
+Resultados del censo expandido (n=639, consenso 639/639, sin exclusiones; reemplaza al
+censo de 113 como resultado principal, conservado arriba por transparencia):
 
-- Acuerdo inter-evaluador (pre-adjudicacion): kappa categoria **0.876** (IC 95%
-  [0.798, 0.943]) | sentimiento **0.469** (IC 95% [0.281, 0.655]).
-- Pipeline vs consenso humano, categoria: **F1 macro 0.516 / micro 0.469** (n=113),
-  V de Cramer 0.618, p < 0.0001.
-- Pipeline vs consenso humano, sentimiento: **F1 micro 0.230** (n=113, p = 0.155: sin
-  asociacion) - VADER resulta inoperante en el dominio tecnico, consistente con lo
-  declarado en la tesis.
+- Acuerdo inter-evaluador (pre-adjudicacion): kappa categoria **0.852** (IC 95%
+  [0.820, 0.881]) | sentimiento **0.498** (IC 95% [0.411, 0.577]).
+- Pipeline vs consenso humano, categoria: **F1 macro 0.511 / micro 0.552** (n=639,
+  IC 95% [0.513, 0.592]), V de Cramer 0.528, p < 0.0001.
+- Pipeline vs consenso humano, sentimiento: **F1 micro 0.218** (n=639, p = 0.009,
+  V de Cramer 0.100) - VADER resulta inoperante en el dominio tecnico.
+- Con el clasificador corregido (fix de plurales s/es y -ies, commit 984b2cc) sobre la
+  misma base de texto: **F1 micro 0.559** (IC 95% [0.521, 0.598]) / **macro 0.520**
+  (IC 95% [0.483, 0.552]) - reproducible con `recalc_clasificador_639.py`.
+
+Reproduccion del reporte del censo expandido:
+
+```bash
+python ground_truth/evaluar_ground_truth.py \
+    --eval1 ground_truth/eval1_639.csv --eval2 ground_truth/eval2_639.csv \
+    --gold ground_truth/gold_639.csv --resuelto ground_truth/resuelto_639.csv \
+    --out resultados_censo_639.md
+```
 
 Herramientas: `exportar_muestra.py` (censo en tandas, semilla reproducible),
-`generar_discrepancias.py`, `evaluar_ground_truth.py` (kappa, F1, IC bootstrap, chi-cuadrado,
-V de Cramer; stdlib pura). Guia completa: `GUIA_ETIQUETADO.md`. Registros:
-`registro_sesiones.md` (tanda 1) y `registro_adjudicacion_piloto.md` (piloto, 28/9/2026).
+`exportar_tanda2_estratificado.py` (muestra estratificada de tanda 2, seed documentada),
+`generar_discrepancias.py`, `evaluar_ground_truth.py` (kappa, F1, IC bootstrap,
+chi-cuadrado, V de Cramer; stdlib pura) y `recalc_clasificador_639.py` (recalculo del
+clasificador corregido sobre el censo expandido, importa `classify_threat` del repo).
+Guia completa: `GUIA_ETIQUETADO.md`. Registros: `registro_sesiones.md` (tanda 1) y
+`registro_adjudicacion_piloto.md` (piloto, 28/9/2026).
 
 ## Limitaciones documentadas
 
 1. **Fuente unica**: solo Reddit via RSS (sin API de datos)
-2. **Clasificador por reglas**: F1 micro 0.464 en categoria (censo fusionado, n=110; ver
-   `ground_truth/resultados_censo_preliminar_113.md`)
-3. **VADER en dominio tecnico**: F1 micro 0.247 en sentimiento (n=93)
+2. **Clasificador por reglas**: F1 micro 0.552 en categoria sobre el censo expandido
+   (n=639; 0.559 con el fix de plurales; la clase "otro" tiene F1 = 0 en todos los
+   cortes, por ausencia de vocabulario, no por plural)
+3. **VADER en dominio tecnico**: F1 micro 0.218 en sentimiento (n=639)
 4. **Interaccion**: score/num_comments = 0 en RSS (limitacion documentada)
 5. **Modo binario de n8n**: el workflow requiere el fix `getBinaryDataBuffer` (incluido)
 
