@@ -96,7 +96,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO public.posts (\n  post_id, title, content, raw_content, author, subreddit, url,\n  score, num_comments, threat_category, sentiment, compound,\n  created_utc, source, first_seen_at\n)\nVALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())\nON CONFLICT (post_id) DO UPDATE SET\n  score = EXCLUDED.score,\n  num_comments = EXCLUDED.num_comments,\n  compound = EXCLUDED.compound,\n  collected_at = NOW()\nRETURNING post_id, threat_category;",
+        "query": "INSERT INTO public.posts (\n  post_id, title, content, raw_content, author, subreddit, url,\n  score, num_comments, threat_category, sentiment, compound,\n  created_utc, source, first_seen_at\n)\nVALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())\nON CONFLICT (post_id) DO UPDATE SET\n  score = EXCLUDED.score,\n  num_comments = EXCLUDED.num_comments,\n  threat_category = EXCLUDED.threat_category,\n  sentiment = EXCLUDED.sentiment,\n  compound = EXCLUDED.compound,\n  collected_at = NOW()\nRETURNING post_id, threat_category;",
         "options": {
           "queryReplacement": "={{ [$json.post_id, $json.title, $json.content, $json.raw_content, $json.author, $json.subreddit, $json.url, $json.score, $json.num_comments, $json.threat_category, $json.sentiment, $json.compound, $json.created_utc, $json.source] }}"
         }

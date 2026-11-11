@@ -110,7 +110,7 @@ Schedule Trigger (60') -> Fetch (Python) -> Clasificar (Python) -> Read Classifi
 - **Fetch (Python)**: `osint_fetch.py` sobre los 7 subreddits con espaciado entre requests.
 - **Clasificar (Python)**: `osint_classify.py` (keywords + VADER) escribe `/tmp/osint_classified.json`.
 - **Validate & Map**: valida y mapea al esquema; lee el binario con `getBinaryDataBuffer()`.
-- **Save to DB**: `INSERT ... ON CONFLICT (post_id) DO UPDATE` de `score`, `num_comments`,
+- **Save to DB**: `INSERT ... ON CONFLICT (post_id) DO UPDATE` de `score`, `num_comments`, `threat_category`, `sentiment`,
   `compound` y `collected_at`. La columna `first_seen_at` se asigna `NOW()` en el INSERT y **no**
   se toca en el `ON CONFLICT` -> queda congelada en el primer avistamiento (a diferencia de
   `collected_at`, que se refresca en cada re-encuentro).
