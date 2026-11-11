@@ -1,9 +1,9 @@
-# Registro de adjudicación del piloto — RESUELTO (28 de septiembre de 2026)
+﻿# Registro de adjudicación del piloto — RESUELTO (28 de septiembre de 2026)
 
 Las **22 discrepancias del piloto (13/8/2026: 3 de categoría + 20 de sentimiento; un post
 discrepa en ambas)** quedaron **adjudicadas en sesión conjunta (llamada) E1 + E2 del piloto
-(M. Scopel + G. Fracchia), 28/9/2026**. **Resultado: las 22 se resolvieron a favor de la
-etiqueta E1 (M. Scopel, etiquetado manual exhaustivo)** — las etiquetas asistidas por LLM
+(G. Fracchia + M. Scopel), 28/9/2026**. **Resultado: las 22 se resolvieron a favor de la
+etiqueta E1 (G. Fracchia, etiquetado manual exhaustivo)** — las etiquetas asistidas por LLM
 que discrepaban fueron descartadas por decisión conjunta.
 
 Con esto el censo fusionado (n=113) queda con **consenso 113/113 en categoría y en
@@ -22,15 +22,16 @@ sentimiento (sin exclusiones)**.
 
 | Sesión | Quién | Fecha | Inicio | Fin | Guardado de la resolución |
 |---|---|---|---|---|---|
-| Adjudicación de las 22 discrepancias del piloto | E1: M. Scopel + E2: G. Fracchia (llamada) | 28/9/2026 | 23:30 | 23:54 (~24 min) | 28/9/2026 23:57 ART |
+| Adjudicación de las 22 discrepancias del piloto | E1: G. Fracchia + E2: M. Scopel (llamada) | 28/9/2026 | 23:30 | 23:54 (~24 min) | 28/9/2026 23:57 ART |
 
 Condiciones: etiquetas finales acordadas por discusión conjunta sobre el material de
 `discrepancias_piloto.csv`, sin acceso a las etiquetas del pipeline durante la decisión.
 
 ## Nota sobre el protocolo del piloto (aclarada 28/9/2026)
 
-El E2 del piloto (13/8) fue **clasificación ciega asistida por LLM, revisada y confirmada
-por M. Scopel** (confirmado por el evaluador el 28/9/2026; el LLM no tuvo acceso a las
+En el piloto, el **Evaluador 1 fue G. Fracchia** (etiquetado manual exhaustivo) y el
+**Evaluador 2 fue M. Scopel**. El E2 del piloto (13/8) fue **clasificación ciega asistida
+por LLM, revisada y confirmada por M. Scopel** (confirmado por el evaluador el 28/9/2026; el LLM no tuvo acceso a las
 etiquetas del pipeline ni a las de E1). El kappa del piloto (0.937 categoría / 0.310
 sentimiento) mide, por lo tanto, el acuerdo entre el etiquetado manual exhaustivo y el
 asistido por IA bajo revisión humana — no es una autoevaluación del sistema (el pipeline

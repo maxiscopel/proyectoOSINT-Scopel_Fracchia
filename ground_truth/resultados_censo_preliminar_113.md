@@ -1,4 +1,4 @@
-# Resultados ground truth (Fase 4)
+﻿# Resultados ground truth (Fase 4)
 
 **Generado por:** `evaluar_ground_truth.py` (v3)
 
@@ -90,4 +90,4 @@ Los ítems con discrepancia se excluyen del análisis de desempeño (sección 5)
 
 ## Nota metodológica
 
-Conjunto fusionado del censo (n=113 = piloto 60 del 13/8 + tanda 1 53 del 3/9, corpus completo al corte del 3/9). Protocolo mixto declarado: E1 = M. Scopel (humano, manual, ambas tandas); E2 piloto = clasificacion ciega asistida por LLM (13/8, sin acceso a etiquetas del pipeline ni de E1); E2 tanda 1 = G. Fracchia (humano, manual, sin LLM). Discrepancias de tanda 1 (10/53) resueltas por adjudicacion conjunta el 3/9; discrepancias del piloto (22/60) PENDIENTES de adjudicacion: en este reporte preliminar quedan excluidas del analisis de desempeno (seccion 5a sobre 110/113 items y 5b sobre 93/113 items; los 3+20 con discrepancia del piloto quedan fuera hasta la adjudicacion). El reporte final (post-adjudicacion) cubrira los 113. Etiquetas del pipeline generadas por el sistema en produccion (n8n + RSS Reddit + keywords + VADER + PostgreSQL).
+Conjunto fusionado del censo (n=113 = piloto 60 del 13/8 + tanda 1 53 del 3/9, corpus completo al corte del 3/9). Protocolo mixto declarado: E1 piloto = G. Fracchia (humano, manual); E1 tanda 1 = M. Scopel (humano, manual); E2 piloto = clasificacion ciega asistida por LLM (13/8, sin acceso a etiquetas del pipeline ni de E1); E2 tanda 1 = G. Fracchia (humano, manual, sin LLM). Discrepancias de tanda 1 (10/53) resueltas por adjudicacion conjunta el 3/9; discrepancias del piloto (22/60) PENDIENTES de adjudicacion: en este reporte preliminar quedan excluidas del analisis de desempeno (seccion 5a sobre 110/113 items y 5b sobre 93/113 items; los 3+20 con discrepancia del piloto quedan fuera hasta la adjudicacion). El reporte final (post-adjudicacion) cubrira los 113. Etiquetas del pipeline generadas por el sistema en produccion (n8n + RSS Reddit + keywords + VADER + PostgreSQL).
