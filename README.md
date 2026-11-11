@@ -69,7 +69,7 @@ http://localhost:5678
 ├── osint_pipeline.py                 # Pipeline de E/T (version de referencia)
 ├── osint_fetch.py                     # Fetch RSS (el que ejecuta n8n)
 ├── osint_classify.py                  # Clasificador + VADER (el que ejecuta n8n)
-├── scripts/                           # Copia montada en /data/scripts (la que corre el contenedor)
+├── scripts/                           # osint_pipeline/fetch/classify.py: copia montada en /data/scripts (la que corre el contenedor)
 ├── Dockerfile                         # Imagen Docker con n8n + Python 3.12 (build-standalone musl)
 ├── docker-compose.yml                 # PostgreSQL + n8n + Metabase (restart: always)
 ├── workflow_osint_monitoreo_rss.json  # Workflow n8n activo (exportado de la DB que ejecuta)
@@ -77,7 +77,7 @@ http://localhost:5678
 ├── dashboard_queries.sql              # Consultas del dashboard (Metabase)
 ├── requirements.txt                   # Dependencias Python (versiones exactas)
 ├── requirements-freeze.txt            # pip freeze completo del contenedor que ejecuto
-├── ground_truth/                      # Estudio de ground truth completo (ver abajo)
+├── ground_truth/                      # Ground truth, tanda 2 ponderada y evidencia C-05 (ver abajo)
 └── README.md                          # Este archivo
 ```
 
@@ -146,7 +146,7 @@ VADER (Valence Aware Dictionary and sEntiment Reasoner) sobre el texto crudo (si
 
 ## Ground truth y evaluacion (`ground_truth/`)
 
-Estudio de evaluacion sobre publicaciones reales del corpus, en tandas (censo):
+Estudio de evaluacion sobre publicaciones reales del corpus, en tandas (censo del corpus analizado de 113 + muestra estratificada de tanda 2):
 
 - **Piloto (13/8/2026, 60 posts)**: E1 humano exhaustivo + E2 clasificacion ciega asistida
   por LLM. Resultados: `resultados_ground_truth.md`.
@@ -164,50 +164,83 @@ Estudio de evaluacion sobre publicaciones reales del corpus, en tandas (censo):
   Dos evaluadores humanos independientes, sin LLM: 137 discrepancias
   (`discrepancias_tanda2.csv`) resueltas por adjudicacion conjunta el 22/10/2026
   (`resuelto_tanda2_137.csv`).
-- **Censo expandido (639 = 113 + 526, definitivo, 22/10/2026)**: etiquetado crudo por
-  evaluador (`eval1_639.csv`, `eval2_639.csv`), resolucion total (`resuelto_639.csv`:
-  169 adjudicadas = 32 del censo original + 137 de tanda 2), etiquetas del pipeline
-  (`gold_639.csv` = `censo_gold_pipeline_113.csv` + `muestra_f4_t2_gold.csv`), texto fuente
-  (`posts_dataset_113_completo.csv` + `posts_dataset_tanda2_1956_completo.csv`) y reporte
-  (`resultados_censo_639.md`).
+- **Conjunto combinado de 639 (113 + 526, 22/10/2026)**: **no es un censo**; es el censo del
+  corpus analizado (113) mas una muestra estratificada de otro lote. Se conserva como control
+  de reproducibilidad: etiquetado crudo por evaluador (`eval1_639.csv`, `eval2_639.csv`),
+  resolucion total (`resuelto_639.csv`: 169 adjudicadas = 32 del censo original + 137 de
+  tanda 2), etiquetas del pipeline (`gold_639.csv` = `censo_gold_pipeline_113.csv` +
+  `muestra_f4_t2_gold.csv`), texto fuente (`posts_dataset_113_completo.csv` +
+  `posts_dataset_tanda2_1956_completo.csv`) y reporte (`resultados_censo_639.md`).
 
-Resultados del censo expandido (n=639, consenso 639/639, sin exclusiones; reemplaza al
-censo de 113 como resultado principal, conservado arriba por transparencia):
+### Cifra principal: censo de 113 (corpus analizado)
+
+Pipeline vs consenso humano sobre las 113 publicaciones del corpus al corte del 3/9
+(`resultados_censo_final_113.md`):
+
+- Categoria: **F1 micro 0.469** (IC 95% [0.381, 0.558]) / macro 0.557.
+- Sentimiento: **F1 micro 0.230** (IC 95% [0.159, 0.310]) / macro 0.339.
+
+### Tanda 2 ponderada por diseno (lote de 1.956)
+
+La muestra de 526 estratifico por la salida del propio pipeline (A = 276 phishing/ransomware
+predichos, peso 1; B = 250 de 1.680, peso 6,72), asi que se reporta ponderada por el inverso
+de la probabilidad de inclusion, separada del censo (`ponderar_tanda2.py`,
+`resultados_tanda2_ponderados.md`; bootstrap estratificado, 2.000 remuestreos, semilla 42):
+
+- Categoria: **F1 micro 0.589** (IC 95% [0.536, 0.643]) / **macro 0.518** ([0.476, 0.560]).
+- Sentimiento: **F1 micro 0.216** ([0.172, 0.261]).
+- Exhaustividad por clase: phishing 0.878 sin ponderar -> **0.516**; ransomware 0.879 ->
+  **0.749**; vulnerabilidad 0.677 -> **0.714**.
+
+### Control: conjunto combinado de 639 (sin ponderar)
+
+Reproduce las cifras previas de la tesis; no usarlo como estimacion de desempeno:
 
 - Acuerdo inter-evaluador (pre-adjudicacion): kappa categoria **0.852** (IC 95%
   [0.820, 0.881]) | sentimiento **0.498** (IC 95% [0.411, 0.577]).
-- Pipeline vs consenso humano, categoria: **F1 macro 0.511 / micro 0.552** (n=639,
-  IC 95% [0.513, 0.592]), V de Cramer 0.528, p < 0.0001.
-- Pipeline vs consenso humano, sentimiento: **F1 micro 0.218** (n=639, p = 0.009,
-  V de Cramer 0.100) - VADER resulta inoperante en el dominio tecnico.
-- Con el clasificador corregido (fix de plurales s/es y -ies, commit 984b2cc) sobre la
-  misma base de texto: **F1 micro 0.559** (IC 95% [0.521, 0.598]) / **macro 0.520**
-  (IC 95% [0.483, 0.552]) - reproducible con `recalc_clasificador_639.py`.
+- Categoria: **F1 macro 0.511 / micro 0.552** (IC 95% [0.513, 0.592]), V de Cramer 0.528.
+- Sentimiento: **F1 micro 0.218** (p = 0.009, V de Cramer 0.100).
+- Con el clasificador corregido (fix de plurales s/es y -ies, commit 984b2cc): **F1 micro
+  0.559** (IC 95% [0.521, 0.598]) / **macro 0.520** (IC 95% [0.483, 0.552]), reproducible con
+  `recalc_clasificador_639.py`.
 
-Reproduccion del reporte del censo expandido:
+Reproduccion del reporte del conjunto de 639 y de la tanda 2 ponderada:
 
 ```bash
 python ground_truth/evaluar_ground_truth.py \
     --eval1 ground_truth/eval1_639.csv --eval2 ground_truth/eval2_639.csv \
     --gold ground_truth/gold_639.csv --resuelto ground_truth/resuelto_639.csv \
     --out resultados_censo_639.md
+
+python ground_truth/ponderar_tanda2.py --bootstrap 2000 --seed 42
 ```
 
 Herramientas: `exportar_muestra.py` (censo en tandas, semilla reproducible),
 `exportar_tanda2_estratificado.py` (muestra estratificada de tanda 2, seed documentada),
+`ponderar_tanda2.py` (metricas de tanda 2 ponderadas por diseno),
 `generar_discrepancias.py`, `evaluar_ground_truth.py` (kappa, F1, IC bootstrap,
 chi-cuadrado, V de Cramer; stdlib pura) y `recalc_clasificador_639.py` (recalculo del
 clasificador corregido sobre el censo expandido, importa `classify_threat` del repo).
 Guia completa: `GUIA_ETIQUETADO.md`. Registros: `registro_sesiones.md` (tanda 1) y
 `registro_adjudicacion_piloto.md` (piloto, 28/9/2026).
 
+## Ventana de operacion continua (C-05)
+
+Ventana de 23/10 22:00 a 28/10 11:00 ART: ejecuciones #226 a #335, **110 ciclos, todos
+`success`, 76.900 upserts y 358 altas nuevas en 96 de las 110 horas** (en las 14 restantes
+solo hubo re-encuentros). Evidencia en `ground_truth/c05_ventana_ciclos.csv` y
+`ground_truth/c05_altas_por_hora.csv`; metodo y limitaciones en `ground_truth/README_c05.md`.
+El umbral de 48-72 h es un criterio operativo fijado a posteriori.
+
 ## Limitaciones documentadas
 
 1. **Fuente unica**: solo Reddit via RSS (sin API de datos)
-2. **Clasificador por reglas**: F1 micro 0.552 en categoria sobre el censo expandido
-   (n=639; 0.559 con el fix de plurales; la clase "otro" tiene F1 = 0 en todos los
-   cortes, por ausencia de vocabulario, no por plural)
-3. **VADER en dominio tecnico**: F1 micro 0.218 en sentimiento (n=639)
+2. **Clasificador por reglas**: F1 micro 0.469 en categoria sobre el censo de 113 (0.589
+   en la tanda 2 ponderada; 0.552 en el conjunto combinado de 639, 0.559 con el fix de
+   plurales; la clase "otro" tiene F1 = 0 en todos los cortes, por ausencia de vocabulario,
+   no por plural)
+3. **VADER en dominio tecnico**: F1 micro 0.230 en sentimiento sobre el censo de 113 (0.216
+   en la tanda 2 ponderada)
 4. **Interaccion**: score/num_comments = 0 en RSS (limitacion documentada)
 5. **Modo binario de n8n**: el workflow requiere el fix `getBinaryDataBuffer` (incluido)
 
