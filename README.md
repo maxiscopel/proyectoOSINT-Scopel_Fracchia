@@ -46,7 +46,7 @@ docker-compose up -d
 docker-compose ps
 ```
 
-5. Acceder a n8n (los puertos 5432, 5678 y 3000 solo escuchan en `127.0.0.1`):
+5. Acceder a n8n (los puertos 5433 (PostgreSQL, mapeado al 5432 interno), 5678 y 3000 solo escuchan en `127.0.0.1`):
 ```
 http://localhost:5678
 ```
@@ -251,7 +251,7 @@ El `docker-compose.yml` incluye Metabase conectado a PostgreSQL:
 ```bash
 docker-compose up -d
 # Metabase: http://localhost:3000
-# PostgreSQL: localhost:5432 (credenciales definidas en .env)
+# PostgreSQL: localhost:5433 (credenciales definidas en .env)
 ```
 
 ### Setup inicial de Metabase
@@ -279,6 +279,9 @@ docker-compose up -d
   username que figuraba en un titulo y la contrasena de desarrollo de PostgreSQL. Quien haya
   clonado o bifurcado el repositorio antes de esa reescritura conserva la version anterior,
   por lo que la sal anterior debe considerarse comprometida y no se reutiliza.
+- **Base de datos local:** la tabla `posts` de PostgreSQL (4.276 registros al 11/11/2026) **no se
+  rehasheo**: los autores historicos conservan los hashes previos al cambio de sal; las
+  ejecuciones nuevas desde el 11/11/2026 usan `AUTHOR_SALT` por entorno. La base no se publica.
 - **Servicios:** PostgreSQL, n8n y Metabase solo escuchan en `127.0.0.1`; las credenciales
   van en `.env` (no versionado, ver `.env.example`).
 
