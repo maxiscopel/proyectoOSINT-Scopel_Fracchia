@@ -29,22 +29,29 @@ git clone https://github.com/maxiscopel/proyectoOSINT-Scopel_Fracchia.git
 cd proyectoOSINT-Scopel_Fracchia
 ```
 
-2. Levantar los servicios:
+2. Crear el archivo de configuracion local a partir de la plantilla y completarlo
+   (`POSTGRES_PASSWORD` y `AUTHOR_SALT`; este ultimo es la sal de seudonimizacion de
+   autores, 32 hex, y **no debe publicarse**):
+```bash
+cp .env.example .env
+```
+
+3. Levantar los servicios:
 ```bash
 docker-compose up -d
 ```
 
-3. Verificar que los contenedores esten ejecutandose:
+4. Verificar que los contenedores esten ejecutandose:
 ```bash
 docker-compose ps
 ```
 
-4. Acceder a n8n:
+5. Acceder a n8n (los puertos 5432, 5678 y 3000 solo escuchan en `127.0.0.1`):
 ```
 http://localhost:5678
 ```
 
-5. Importar el workflow desde `workflow_osint_monitoreo_rss.json` en n8n y activarlo.
+6. Importar el workflow desde `workflow_osint_monitoreo_rss.json` en n8n y activarlo.
 
 > **Importante (n8n >= 2.0):** el nodo `Execute Command` esta excluido por defecto por seguridad
 > (`NODES_EXCLUDE`). El `docker-compose.yml` ya define `NODES_EXCLUDE: "[]"` para habilitarlo.
@@ -211,16 +218,34 @@ El `docker-compose.yml` incluye Metabase conectado a PostgreSQL:
 ```bash
 docker-compose up -d
 # Metabase: http://localhost:3000
-# PostgreSQL: localhost:5432 (osint_user / REDACTED-PASSWORD / osint_db)
+# PostgreSQL: localhost:5432 (credenciales definidas en .env)
 ```
 
 ### Setup inicial de Metabase
 
 1. Abrir `http://localhost:3000` y completar el asistente
 2. PostgreSQL: host `osint-postgres`, puerto 5432, base `osint_db`, usuario `osint_user`,
-   contrasena `REDACTED-PASSWORD`
+   contrasena la definida en `POSTGRES_PASSWORD` de `.env`
 3. Importar las 4 consultas de `dashboard_queries.sql` como preguntas guardadas
 4. Crear un dashboard y agregar las 4 preguntas
+
+## Privacidad y riesgo residual
+
+- **Seudonimizacion del autor:** `author = sha256(sal + "/u/usuario")[:16]`, aplicada una
+  sola vez, en la extraccion (`entry_to_record`). `osint_classify.py` no vuelve a hashear.
+  La sal se lee de la variable de entorno `AUTHOR_SALT`; el codigo no tiene valor por defecto
+  y falla si falta.
+- **Datasets de `ground_truth/`:** se elimino el pie `submitted by /u/<usuario> [link] [comments]`
+  de `content` y `raw_content`, y la columna `author` se regenero con la sal vigente
+  (2.053 de 2.056 filas con esquema unico verificado; 3 publicaciones sin pie, sin usuario
+  recuperable, usan el hash del hash previo). La limpieza no altera ninguna clasificacion
+  (0/639 cambios de categoria o sentimiento).
+- **Riesgo residual:** el texto de las publicaciones sigue siendo publico en Reddit, por lo que
+  el autor puede re-identificarse buscando el titulo. Mientras no se reescriba el historial de
+  git, la sal anterior y los pies `submitted by` siguen accesibles en commits previos; la sal
+  anterior debe considerarse comprometida y no se reutiliza.
+- **Servicios:** PostgreSQL, n8n y Metabase solo escuchan en `127.0.0.1`; las credenciales
+  van en `.env` (no versionado, ver `.env.example`).
 
 ## Licencia
 
