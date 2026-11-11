@@ -241,9 +241,11 @@ docker-compose up -d
   recuperable, usan el hash del hash previo). La limpieza no altera ninguna clasificacion
   (0/639 cambios de categoria o sentimiento).
 - **Riesgo residual:** el texto de las publicaciones sigue siendo publico en Reddit, por lo que
-  el autor puede re-identificarse buscando el titulo. Mientras no se reescriba el historial de
-  git, la sal anterior y los pies `submitted by` siguen accesibles en commits previos; la sal
-  anterior debe considerarse comprometida y no se reutiliza.
+  el autor puede re-identificarse buscando el titulo. El historial de git se reescribio con
+  `git filter-repo` para eliminar la sal anterior, los pies `submitted by /u/<usuario>`, un
+  username que figuraba en un titulo y la contrasena de desarrollo de PostgreSQL. Quien haya
+  clonado o bifurcado el repositorio antes de esa reescritura conserva la version anterior,
+  por lo que la sal anterior debe considerarse comprometida y no se reutiliza.
 - **Servicios:** PostgreSQL, n8n y Metabase solo escuchan en `127.0.0.1`; las credenciales
   van en `.env` (no versionado, ver `.env.example`).
 
