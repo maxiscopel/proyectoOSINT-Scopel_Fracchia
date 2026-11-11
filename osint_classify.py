@@ -30,10 +30,8 @@ def main(argv=None) -> None:
     with open(args.input, encoding="utf-8") as fh:
         records = json.load(fh)
 
+    # El autor ya viene seudonimizado desde la extracción: no se re-hashea aquí.
     records = p.classify_records(records)
-    for record in records:
-        if record.get("author"):
-            record["author"] = p.pseudonymize_author(record["author"])
 
     if args.out:
         with open(args.out, "w", encoding="utf-8") as fh:

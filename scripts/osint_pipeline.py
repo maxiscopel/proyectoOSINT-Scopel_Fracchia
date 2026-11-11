@@ -25,6 +25,7 @@ import hashlib
 import html
 import json
 import logging
+import os
 import re
 import sys
 import time
@@ -34,7 +35,6 @@ import feedparser
 LOG = logging.getLogger("osint_pipeline")
 
 USER_AGENT = "osint-monitor/1.0 by maxis (tesis UTN) py/feedparser"
-AUTHOR_SALT = "REDACTED-SALT"  # Sal fija para seudonimización reproducible
 # Throttle RSS de Reddit diagnosticado el 02-09-2026 con evidencia de headers:
 # x-ratelimit-remaining: 0.0 tras UNA peticion, x-ratelimit-reset: 2 (min).
 # Con 3 fetches consecutivos solo el primero tiene exito; los otros reciben
@@ -44,9 +44,22 @@ INTER_SUBREDDIT_DELAY = 150.0  # Espaciado entre subreddits (veces el reset del 
 MIN_TEXT_LENGTH = 20
 
 
+def _author_salt() -> str:
+    """Lee la sal de seudonimización desde la variable de entorno AUTHOR_SALT.
+
+    No hay valor por defecto a propósito: la sal no debe figurar en el código
+    ni en el repositorio. Si falta, se aborta antes de procesar ningún autor.
+    """
+    salt = os.environ.get("AUTHOR_SALT", "")
+    if not salt:
+        raise RuntimeError("Falta la variable de entorno AUTHOR_SALT (sal de seudonimización)")
+    return salt
+
+
 def pseudonymize_author(author: str) -> str:
-    """Seudonimiza el autor con SHA-256 + sal. Reversible solo con la sal."""
-    return hashlib.sha256((AUTHOR_SALT + author).encode()).hexdigest()[:16]
+    """Seudonimiza el autor: sha256(sal + autor)[:16]. Se aplica UNA sola vez,
+    en la extracción (entry_to_record); las etapas posteriores no re-hashean."""
+    return hashlib.sha256((_author_salt() + author).encode()).hexdigest()[:16]
 
 
 THREAT_KEYWORDS = {
