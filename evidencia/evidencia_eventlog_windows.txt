@@ -1,0 +1,121 @@
+EVIDENCIA PRIMARIA — CORTES DE ENERGÍA DE RED Y REINICIOS (28-30/10/2026)
+=========================================================================
+
+Procedencia: Event Viewer de Windows (canal System), notebook HP del
+operador. Horarios locales ART (UTC-3). Extraídos manualmente el 30/10/2026
+~19:45 ART con Get-WinEvent; el campo AcOnline es del XML crudo de cada
+evento (Kernel-Power 105 = "Cambio de fuente de energía"; true = conectado a
+la red, false = sin red). Las líneas "→" son interpretación; el resto son
+los eventos tal cual.
+
+El log de ejecuciones de n8n (log_ejecuciones_n8n_2026-10-30.csv, timestamps
+en UTC) es la contraparte: cada ciclo horario que la máquina estaba despierta
+aparece como SUCCESS de ~1070 s.
+
+-----------------------------------------------------------------------------
+MIÉRCOLES 28/10/2026 — el día que cortó la ventana certificada
+-----------------------------------------------------------------------------
+Última ejecución del tramo certificado: #335, 14:00:56→14:18:44 UTC
+(11:00:56→11:18:44 ART), SUCCESS.
+
+11:34:55  Kernel-Power 105  AcOnline=false   → SE CORTÓ LA LUZ (corte 1)
+11:34:55  Kernel-Power 506/507  "AC/DC Display Burst Suppressed"
+11:55:43  Kernel-Power 105  AcOnline=true    → volvió la luz (21 min después)
+11:55:43  Kernel-Power 506/507  "AC/DC Display Burst Suppressed"
+13:12:52  Kernel-Power 105  AcOnline=false   → SE CORTÓ LA LUZ (corte 2)
+13:12:52  Kernel-Power 506/507  "AC/DC Display Burst Suppressed"
+14:26:45  Kernel-Power 105  AcOnline=true    → volvió la luz (74 min después)
+14:26:45  Kernel-Power 506/507  "AC/DC Display Burst Suppressed"
+
+→ La fuente volvió sola las dos veces sin nadie en la casa (el operador
+  estaba trabajando): descarta cargador/cable flojo; corte y restitución
+  de la red de distribución.
+→ La máquina NO despertó de los bursts de Modern Standby aunque volvió la
+  red: no hay más eventos hasta las 03:05 del 29/10 (~12,7 h dormida).
+  Los ciclos de n8n 12:00-23:00 del 28/10 no ejecutaron.
+→ Corroboración externa: Edemsa tenía cortes programados por mantenimiento
+  ese miércoles 28/10 en 9 departamentos de Mendoza, Luján de Cuyo incluido
+  (ver referencias_notas_edemsa.md).
+
+-----------------------------------------------------------------------------
+JUEVES 29/10/2026 — despertar automático, reboot de Windows Update, 18 h en login
+-----------------------------------------------------------------------------
+03:05:53  Kernel-Power 507  "El sistema está saliendo del modo de espera
+                            moderno" (wake de mantenimiento)
+03:05:53  Kernel-Power 506  (re-entrada en burst)
+
+→ n8n reanudó: #336 catch-up 06:31 UTC (03:31 ART) y #337 07:00 UTC
+  (04:00 ART), ambos SUCCESS.
+
+05:00:56  (n8n) ejecución #338 crashed 0,0 s — la máquina se estaba
+          apagando justo al disparar el ciclo.
+
+05:13:11  Winlogon 7002
+05:15:18  Kernel-Power 109  "transición de apagado. Acción: Power Action
+                            Reboot. Motivo: Kernel API"
+05:15:19  Kernel-General 13 (cierre del sistema operativo)
+05:15:47  Kernel-General 12 (arranque del sistema operativo)
+05:16:09  Kernel-Power 506  "Idle Timeout" (en pantalla de login, sin sesión)
+05:17:36  Kernel-Power 109  Reboot "Kernel API" (segundo loop)
+05:17:37  Kernel-General 13
+05:17:46  Kernel-General 12
+05:18:09  Kernel-Power 506  "Idle Timeout"
+
+→ Windows Update reinició la máquina de madrugada: KB5127936 y KB5132402
+  quedaron instaladas con fecha 29/10 (ver sección Hotfixes). La pausa de
+  actualizaciones aplicada el 13/10 había VENCIDO (campos de pausa vacíos
+  en HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings).
+→ Tras el reboot la máquina quedó en pantalla de login: Docker Desktop no
+  arranca sin sesión iniciada → n8n caído 18 h.
+13:41:30  Kernel-Power 507  "Input Touchpad" (wake breve, nadie inicia sesión)
+14:11:53  Kernel-Power 506  "Idle Timeout" (vuelve a dormir)
+23:01:28  Kernel-Power 507  "Input Mouse"  → llega el operador
+23:01:40  Winlogon 7001    (inicio de sesión)
+→ Docker up 23:01, contenedores up, workflow activo. n8n reanuda con el
+  ciclo #339 del 30/10 00:00 ART.
+
+-----------------------------------------------------------------------------
+VIERNES 30/10/2026 — 12 ciclos limpios y 3 cortes de red más
+-----------------------------------------------------------------------------
+00:00-11:18 ART  (n8n) #339 → #350: 12 ciclos SUCCESS (00:00:08 hasta
+                 11:00:08 ART de inicio, ~1070 s cada uno).
+
+01:56:45  Kernel-Power 506  "Idle Timeout"
+→ Nota: sin 507 posterior y con los ciclos 02:00-11:18 corriendo normales
+  en el log — standby transitorio/abortado (el logging de Modern Standby es
+  impreciso); la colecta siguió.
+
+11:21:02  Kernel-Power 105  AcOnline=false  → SE CORTÓ LA LUZ (corte 1)
+11:27:48  Kernel-Power 105  AcOnline=true   → volvió (6,8 min)
+11:28:09  Kernel-Power 105  AcOnline=false  → corte 2 (21 s después)
+11:36:04  Kernel-Power 105  AcOnline=true   → volvió (7,9 min)
+11:38:43  Kernel-Power 105  AcOnline=false  → corte 3
+11:52:01  Kernel-Power 105  AcOnline=true   → volvió (13,3 min)
+(cada flip con su burst Kernel-Power 506/507 "AC/DC Display Burst Suppressed")
+
+→ Patrón de flaps de fuente típico de trabajos de mantenimiento (energizan,
+  prueban, vuelven a cortar). Edemsa había anunciado cortes programados
+  para el viernes 30/10 en Luján de Cuyo (ver referencias_notas_edemsa.md).
+→ La máquina quedó en Modern Standby desde ~11:52 pese a estar de vuelta en
+  red: ciclos 12:00-19:00 no ejecutaron (8 perdidos).
+19:14:02  Kernel-Power 507  "Lid"  → el operador abre la tapa al volver
+                                    de trabajar; la máquina despierta.
+
+-----------------------------------------------------------------------------
+HOTFIXES (Windows Update) — Get-HotFix, instalados con fecha
+-----------------------------------------------------------------------------
+KB5127936  Update             29/10/2026   ← los que reiniciaron la máquina
+KB5132402  Update             29/10/2026   ← a las 05:00 ART
+KB5127694  Update             20/10/2026   ← (pausa ya vencida desde el 20/10)
+KB5121794  Update             20/10/2026
+KB5127647  Security Update    14/10/2026
+
+Estado al 30/10 ~19:30 ART: sin reinicio pendiente (CBS RebootPending=False,
+WU RebootRequired=False), máquina en red, batería 100 %, contenedores up.
+
+=========================================================================
+Síntesis: la ventana certificada (#226→#335, 109,3 h, 110 SUCCESS) terminó
+por un corte de la red eléctrica de distribución (Edemsa), no por falla del
+pipeline ni del operador. La limitación estructural del setup es que la
+batería de la notebook no actúa como UPS: la transición AC↔DC la lleva a
+Modern Standby y no despierta sola al restituirse la red.
