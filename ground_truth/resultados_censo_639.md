@@ -1,6 +1,6 @@
 ﻿# Resultados ground truth (Fase 4)
 
-**Generado por:** `evaluar_ground_truth.py` (v2)
+**Generado por:** `evaluar_ground_truth.py` (v4)
 
 ## 1. Muestra analizada
 
@@ -22,8 +22,8 @@ El kappa de esta sección es el acuerdo ANTES de la adjudicación conjunta de di
 
 | Comparación | Categoría (κ) | Sentimiento (κ) |
 |---|---|---|
-| Evaluador 1 vs. pipeline | 0.444 | 0.043 |
-| Evaluador 2 vs. pipeline | 0.444 | 0.043 |
+| Evaluador 1 vs. pipeline | 0.425 | 0.026 |
+| Evaluador 2 vs. pipeline | 0.442 | 0.037 |
 
 ## 4. Consenso humano y discrepancias
 

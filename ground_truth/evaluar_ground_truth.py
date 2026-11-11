@@ -204,7 +204,7 @@ def write_report(out_path: str, sections: list, nota: str = None) -> None:
     lines = [
         "# Resultados ground truth (Fase 4)",
         "",
-        "**Generado por:** `evaluar_ground_truth.py` (v2)",
+        "**Generado por:** `evaluar_ground_truth.py` (v4)",
         "",
     ]
     for block in sections:
@@ -294,11 +294,12 @@ def main(argv=None) -> None:
         f"El kappa de esta sección es el acuerdo ANTES de la adjudicación conjunta de discrepancias.",
     ])
 
-    # --- Evaluador vs pipeline
-    k_e1g_cat = cohen_kappa(cats_e1, cats_gold)
-    k_e2g_cat = cohen_kappa(cats_e2, cats_gold)
-    k_e1g_sent = cohen_kappa(sent_e1, sent_gold)
-    k_e2g_sent = cohen_kappa(sent_e2, sent_gold)
+    # --- Evaluador vs pipeline (v4: sobre etiquetas CRUDAS, pre-adjudicacion;
+    # con las adjudicadas e1 == e2 y ambos kappa salian identicos, m-07)
+    k_e1g_cat = cohen_kappa(cats_e1_raw, cats_gold)
+    k_e2g_cat = cohen_kappa(cats_e2_raw, cats_gold)
+    k_e1g_sent = cohen_kappa(sent_e1_raw, sent_gold)
+    k_e2g_sent = cohen_kappa(sent_e2_raw, sent_gold)
     sections.append([
         "## 3. Acuerdo evaluador vs. pipeline",
         "",
