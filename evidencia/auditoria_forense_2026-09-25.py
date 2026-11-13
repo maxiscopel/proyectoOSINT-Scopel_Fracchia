@@ -1,4 +1,4 @@
-"""auditoria_forense_2026-09-25.py — responde las preguntas bloqueantes del profesor.
+"""auditoria_forense_2026-09-25.py — verificaciones forenses sobre el origen y la integridad del corpus.
 
 1) SELECT execution_entity id BETWEEN 20 AND 30 — DB viva + todos los backups
 2) huérfanas en execution_data (distingue "nunca existieron" vs "borradas")

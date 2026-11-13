@@ -90,4 +90,29 @@ Los ítems con discrepancia se excluyen del análisis de desempeño (sección 5)
 
 ## Nota metodológica
 
-Conjunto fusionado del censo (n=113 = piloto 60 del 13/8 + tanda 1 53 del 3/9, corpus completo al corte del 3/9). Protocolo mixto declarado: E1 piloto = G. Fracchia (humano, manual); E1 tanda 1 = M. Scopel (humano, manual); E2 piloto = clasificacion ciega asistida por LLM, REVISADA Y CONFIRMADA por M. Scopel (13/8, sin acceso del LLM a las etiquetas del pipeline ni de E1); E2 tanda 1 = G. Fracchia (humano, manual, sin LLM). Discrepancias resueltas por adjudicacion conjunta: 10 de tanda 1 (sesion del 3/9/2026) y 22 del piloto (sesion conjunta del 28/9/2026, resueltas todas a favor de la etiqueta E1). Con la adjudicacion aplicada el consenso cubre los 113 items (sin exclusiones). Etiquetas del pipeline generadas por el sistema en produccion (n8n + RSS Reddit + keywords + VADER + PostgreSQL). Registro de sesiones: ground_truth/registro_sesiones.md y gonza_pendientes_2026-09-28/01_censo_ground_truth/registro_adjudicacion_piloto.md.
+Conjunto fusionado del censo (n=113 = piloto 60 del 13/8 + tanda 1 53 del 3/9, corpus completo al corte del 3/9). Protocolo mixto declarado: E1 = M. Scopel (humano, manual, ambas tandas); E2 piloto = clasificacion ciega asistida por LLM, REVISADA Y CONFIRMADA por M. Scopel (13/8, sin acceso del LLM a las etiquetas del pipeline ni de E1); E2 tanda 1 = G. Fracchia (humano, manual, sin LLM). Discrepancias resueltas por adjudicacion conjunta: 10 de tanda 1 (sesion del 3/9/2026) y 22 del piloto (sesion conjunta del 28/9/2026, resueltas todas a favor de la etiqueta E1). Con la adjudicacion aplicada el consenso cubre los 113 items (sin exclusiones). Etiquetas del pipeline generadas por el sistema en produccion (n8n + RSS Reddit + keywords + VADER + PostgreSQL). Registro de sesiones: ground_truth/registro_sesiones.md y gonza_pendientes_2026-09-28/01_censo_ground_truth/registro_adjudicacion_piloto.md.
+
+---
+
+## Errata (12/11/2026)
+
+**Qué se corrigió.** El texto de arriba es el original de septiembre de 2026 y se conserva
+sin cambios. Atribuía el Evaluador 1 (E1) del piloto a M. Scopel. El 11/11/2026 (commit
+`dc081c2`) se había reescrito ese texto para unificar los roles; ese cambio se hizo sin
+errata y queda registrado aquí. La atribución vigente es: **en el piloto (13/8/2026), E1 =
+G. Fracchia (etiquetado manual) y E2 = M. Scopel (clasificación ciega asistida por LLM,
+revisada y confirmada por M. Scopel)**. En la tanda 1 (3/9/2026) y en la tanda 2, E1 = M. Scopel
+y E2 = G. Fracchia, sin LLM.
+
+**Evidencia en que se apoya.** La atribución vigente se apoya en la declaración conjunta de
+los autores y en los registros de sesión (`registro_sesiones.md`, que cubre la tanda 1). No
+existe un registro contemporáneo independiente de quién etiquetó cada archivo del piloto:
+`muestra_eval1.csv` y `muestra_eval2.csv` son plantillas vacías e idénticas, y el registro
+contemporáneo (el texto original de arriba) indicaba otra cosa. Se declara así en la tesis (§5.6).
+
+**Efecto sobre las métricas.** Ninguno en el κ ni en el desempeño declarado: las etiquetas
+no cambian, solo el nombre de quien las produjo. Para acotar el efecto de la adjudicación en
+bloque de las 22 discrepancias del piloto a favor de E1, se recalculó la sensibilidad exacta
+adjudicándolas a favor de E2:
+
+Véase la tabla de sensibilidad en `registro_adjudicacion_piloto.md` (reproducible con `sensibilidad_piloto.py`): categoría 0,469 → 0,451 (F1 micro) y 0,516 → 0,509 (macro); sentimiento 0,230 → 0,319 (micro) y 0,193 → 0,296 (macro).

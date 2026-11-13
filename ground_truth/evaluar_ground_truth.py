@@ -295,7 +295,7 @@ def main(argv=None) -> None:
     ])
 
     # --- Evaluador vs pipeline (v4: sobre etiquetas CRUDAS, pre-adjudicacion;
-    # con las adjudicadas e1 == e2 y ambos kappa salian identicos, m-07)
+    # con las adjudicadas e1 == e2 y ambos kappa salian identicos)
     k_e1g_cat = cohen_kappa(cats_e1_raw, cats_gold)
     k_e2g_cat = cohen_kappa(cats_e2_raw, cats_gold)
     k_e1g_sent = cohen_kappa(sent_e1_raw, sent_gold)

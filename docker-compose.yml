@@ -1,8 +1,8 @@
 services:
   osint-postgres:
-    image: postgres:alpine3.22
+    image: postgres:18.2-alpine3.22
     container_name: osint-postgres
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?definir POSTGRES_USER en .env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?definir POSTGRES_PASSWORD en .env}
@@ -22,7 +22,7 @@ services:
   maxi-n8n:
     build: .
     container_name: maxi-n8n
-    restart: always
+    restart: unless-stopped
     ports:
       - "127.0.0.1:5678:5678"
     environment:
@@ -43,9 +43,9 @@ services:
       - osint-net
 
   metabase:
-    image: metabase/metabase:latest
+    image: metabase/metabase:v0.63.16.1
     container_name: osint-metabase
-    restart: always
+    restart: unless-stopped
     ports:
       - "127.0.0.1:3000:3000"
     environment:

@@ -1,16 +1,16 @@
-# C-05 - Evidencia de la ventana de operacion continua (23-28/10/2026)
+# Evidencia de la ventana de operacion continua (23-28/10/2026)
 
 Respaldo de la ventana citada en el Anexo H de la tesis. Dos CSV, ambos con
 horas en **ART (UTC-3)**:
 
 | Archivo | Filas | Contenido |
 |---|---|---|
-| `c05_ventana_ciclos.csv` | 110 | Una fila por ciclo de n8n, ejecuciones #226 a #335 |
-| `c05_altas_por_hora.csv` | 96 | Publicaciones nuevas por hora (solo horas con al menos una alta) |
+| `ventana_continua_ciclos.csv` | 110 | Una fila por ciclo de n8n, ejecuciones #226 a #335 |
+| `ventana_continua_altas_por_hora.csv` | 96 | Publicaciones nuevas por hora (solo horas con al menos una alta) |
 
 ## Columnas
 
-`c05_ventana_ciclos.csv`: `id, hora_art, status, duracion_s, upserts, altas_nuevas`
+`ventana_continua_ciclos.csv`: `id, hora_art, status, duracion_s, upserts, altas_nuevas`
 
 - `id`: id de ejecucion de n8n.
 - `hora_art`: hora de inicio del ciclo, truncada a la hora (`YYYY-MM-DD HH:MM`).
@@ -18,15 +18,16 @@ horas en **ART (UTC-3)**:
 - `upserts`: posts enviados al nodo de carga en el ciclo (insertados o actualizados).
 - `altas_nuevas`: posts cuyo `first_seen_at` cae en esa hora (0 si no hay).
 
-`c05_altas_por_hora.csv`: `hora_art, altas`.
+`ventana_continua_altas_por_hora.csv`: `hora_art, altas`.
 
 ## Como se construyeron
 
 1. **Ciclos y upserts.** Se leyo `execution_data` de la SQLite de n8n (solo lectura)
    con `export_upserts_por_ejecucion.py`, que cuenta los items que entran al
    nodo de carga de cada ejecucion. Salida: `upserts_por_ejecucion_2026-09-28.csv`
-   (carpeta `scripts/` de la raiz del proyecto, fuera de este repo; el nombre
-   conserva la fecha de la primera version y el archivo se regenero despues).
+   (publicado en `evidencia/upserts_por_ejecucion_2026-09-28.csv`; el nombre
+   conserva la fecha de la primera version y el archivo se regenero despues; el
+   script esta en `evidencia/export_upserts_por_ejecucion.py`).
    Se filtraron las ejecuciones 226 a 335. `status` y `duracion_s` salen de ese
    mismo export; coinciden con `scripts/log_ejecuciones_n8n_2026-10-30.csv`
    (`export_ejecuciones_n8n.py`).
@@ -68,5 +69,6 @@ sostenida; no es una medicion de desempeno del clasificador.
 - `first_seen_at` se agrego el 28/9/2026 y, para filas anteriores, se completo con
   `collected_at`; no afecta a esta ventana (todos los posts de la ventana son
   posteriores).
-- Los archivos de origen (log de n8n, export de upserts) viven en `scripts/` de
-  la raiz del proyecto y no se versionan en este repo.
+- Los archivos de origen (log de n8n y export de upserts) estan publicados en
+  `evidencia/`; las altas por hora se calculan sobre la tabla `posts`, que no se
+  publica (la consulta SQL de arriba la reproduce sobre una copia de la base).

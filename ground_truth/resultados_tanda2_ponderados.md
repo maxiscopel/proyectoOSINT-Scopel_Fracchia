@@ -1,7 +1,7 @@
 # Metricas de tanda 2 ponderadas por el diseno muestral
 
-Generado por `ponderar_tanda2.py` v1 (2026-11-10). Correccion C-04 de la
-auditoria v5: la muestra de tanda 2 (526 de 1.956) estratifico por la salida
+Generado por `ponderar_tanda2.py` v1 (2026-11-10). La muestra de tanda 2
+(526 de 1.956) estratifico por la salida
 del propio pipeline (estrato A = las 276 phishing/ransomware que predijo el
 sistema, inclusion con probabilidad 1; estrato B = 250 de 1.680, probabilidad
 0,1488). Las metricas sin ponderar de esa muestra no estiman el desempeno sobre

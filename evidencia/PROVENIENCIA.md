@@ -112,6 +112,6 @@ la tesis **no** corrige esto (no alcanza el guion).
 
 **Cerrado con evidencia primaria.** La versión de agosto que produjo el corpus está
 recuperada, con hash, origen (sesión + `part_id` + timestamp) y verificación de que
-reproduce el 100 % de las etiquetas del corpus. El bonus que Gonza dejó pasar como
-"pocas chances" no requirió el historial de OneDrive: la evidencia estaba en el
-almacenamiento de sesiones del agente, no en el sistema de archivos.
+reproduce el 100 % de las etiquetas del corpus. La recuperación no requirió el historial de OneDrive (que se
+consideraba de pocas chances): la evidencia estaba en el almacenamiento de
+sesiones del agente, no en el sistema de archivos.

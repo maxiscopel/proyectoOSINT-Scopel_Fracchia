@@ -1,4 +1,4 @@
-post_id,cat_eval1_maxi,cat_eval2_gonzalo,cat_discrepa,sent_eval1_maxi,sent_eval2_gonzalo,sent_discrepa
+post_id,cat_eval1,cat_eval2,cat_discrepa,sent_eval1,sent_eval2,sent_discrepa
 1tgfosb,malware,malware,False,neutral,negativo,True
 1todldg,malware,malware,False,neutral,negativo,True
 1u2x1b1,no_clasificado,no_clasificado,False,positivo,neutral,True

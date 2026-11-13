@@ -209,13 +209,30 @@ def fetch_feed_with_retry(subreddit: str):
     raise RuntimeError(f"r/{subreddit} agotó reintentos: {last}")
 
 
+# Pie que Reddit agrega al resumen RSS de cada publicacion:
+# "submitted by /u/<usuario> [link] [comments]". Contiene el nombre de usuario
+# en claro, por lo que se elimina antes de guardar content y raw_content.
+_SUBMITTED_BY_RE = re.compile(
+    r"\s*submitted\s+by\s+/?u/[\w-]+(?:\s*\[link\])?(?:\s*\[comments\])?",
+    re.IGNORECASE,
+)
+
+
+def strip_submitted_by(text: str) -> str:
+    """Elimina el pie 'submitted by /u/usuario [link] [comments]' del texto."""
+    return _SUBMITTED_BY_RE.sub(" ", text)
+
+
 def entry_to_record(entry, subreddit: str) -> dict:
     title = html.unescape(entry.get("title") or "").strip()
     raw_content = entry.get("summary") or ""
     if not raw_content:
         raw_content = "".join(c.value for c in (entry.get("content") or []))
-    # Texto crudo para VADER: conserva mayúsculas, puntuación y emoticones (C-08)
+    # Texto crudo para VADER: conserva mayúsculas, puntuación y emoticones
     raw_text_for_sentiment = html.unescape(re.sub(r"<[^>]+>", " ", raw_content))
+    # El pie "submitted by /u/usuario ..." se quita ANTES de asignar content y
+    # raw_content: el nombre de usuario no se guarda en claro en ningun campo.
+    raw_text_for_sentiment = strip_submitted_by(raw_text_for_sentiment)
     raw_text_for_sentiment = re.sub(r"\s+", " ", raw_text_for_sentiment).strip()
     # Texto normalizado para clasificación de amenazas
     content = raw_text_for_sentiment.lower()
@@ -276,7 +293,7 @@ def collect_records(subreddits: list, limit: int) -> list:
 def classify_records(records: list) -> list:
     """Transformación: clasifica por amenaza (palabra completa) y VADER.
 
-    VADER corre sobre el texto crudo (C-08): mayúsculas, puntuación y
+    VADER corre sobre el texto crudo: mayúsculas, puntuación y
     emoticones preservados. Se modifica la lista in-place y se devuelve.
     """
     for rec in records:

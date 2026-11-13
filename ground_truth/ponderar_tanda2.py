@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """ponderar_tanda2.py — metricas de la tanda 2 ponderadas por el diseno muestral.
 
-v1 (2026-11-10), correccion C-04 de la auditoria v5.
+v1 (2026-11-10).
 
 La muestra de tanda 2 (526 publicaciones de un lote de 1.956) se construyo
 estratificando por la SALIDA del propio pipeline:
@@ -41,6 +41,7 @@ Uso:
     python ponderar_tanda2.py [--bootstrap 2000] [--seed 42]
 """
 
+import os
 import argparse
 import csv
 import random
@@ -130,7 +131,10 @@ def prf_weighted(pairs, classes, weights=None):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Metricas tanda 2 ponderadas por diseno (C-04)")
+    # Las rutas de entrada/salida son relativas a este directorio: se puede
+    # ejecutar desde la raiz del repositorio o desde ground_truth/.
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    parser = argparse.ArgumentParser(description="Metricas tanda 2 ponderadas por diseno")
     parser.add_argument("--bootstrap", type=int, default=2000)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--out", default="resultados_tanda2_ponderados.md")
@@ -204,8 +208,8 @@ def main(argv=None):
     L = []
     L.append("# Metricas de tanda 2 ponderadas por el diseno muestral")
     L.append("")
-    L.append("Generado por `ponderar_tanda2.py` v1 (2026-11-10). Correccion C-04 de la")
-    L.append("auditoria v5: la muestra de tanda 2 (526 de 1.956) estratifico por la salida")
+    L.append("Generado por `ponderar_tanda2.py` v1 (2026-11-10). La muestra de tanda 2")
+    L.append("(526 de 1.956) estratifico por la salida")
     L.append("del propio pipeline (estrato A = las 276 phishing/ransomware que predijo el")
     L.append("sistema, inclusion con probabilidad 1; estrato B = 250 de 1.680, probabilidad")
     L.append("0,1488). Las metricas sin ponderar de esa muestra no estiman el desempeno sobre")

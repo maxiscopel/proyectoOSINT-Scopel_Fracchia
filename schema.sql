@@ -7,7 +7,7 @@
 -- post por el sistema. El UPSERT del workflow la asigna NOW() en el INSERT y NO la
 -- toca en el ON CONFLICT DO UPDATE -> queda congelada en el alta (a diferencia de
 -- collected_at, que se refresca en cada re-encuentro). Desde 2026-11-11 el UPSERT
--- tambien refresca threat_category y sentiment junto con compound (m-09), para que
+-- tambien refresca threat_category y sentiment junto con compound, para que
 -- no queden incoherentes con compound. Para bases existentes:
 --   ALTER TABLE posts ADD COLUMN IF NOT EXISTS first_seen_at timestamptz;
 --   UPDATE posts SET first_seen_at = collected_at WHERE first_seen_at IS NULL;

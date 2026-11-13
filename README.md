@@ -69,15 +69,16 @@ http://localhost:5678
 ├── osint_pipeline.py                 # Pipeline de E/T (version de referencia)
 ├── osint_fetch.py                     # Fetch RSS (el que ejecuta n8n)
 ├── osint_classify.py                  # Clasificador + VADER (el que ejecuta n8n)
-├── scripts/                           # osint_pipeline/fetch/classify.py: copia montada en /data/scripts (la que corre el contenedor)
+├── scripts/                           # osint_pipeline/fetch/classify.py (copia montada en /data/scripts, la que corre el contenedor) y limpiar_pie_usuario.sql (saneamiento puntual de `posts`)
 ├── Dockerfile                         # Imagen Docker con n8n + Python 3.12 (build-standalone musl)
-├── docker-compose.yml                 # PostgreSQL + n8n + Metabase (restart: always)
+├── docker-compose.yml                 # PostgreSQL + n8n + Metabase (restart: unless-stopped)
 ├── workflow_osint_monitoreo_rss.json  # Workflow n8n activo (exportado de la DB que ejecuta)
 ├── schema.sql                         # DDL de la base de datos (esquema definitivo)
 ├── dashboard_queries.sql              # Consultas del dashboard (Metabase)
 ├── requirements.txt                   # Dependencias Python (versiones exactas)
 ├── requirements-freeze.txt            # pip freeze completo del contenedor que ejecuto
-├── ground_truth/                      # Ground truth, tanda 2 ponderada y evidencia C-05 (ver abajo)
+├── evidencia/                         # Logs de n8n, script forense, corpus de 860 con texto y desglose de upserts (ver evidencia/README.md)
+├── ground_truth/                      # Ground truth, tanda 2 ponderada y evidencia de la ventana continua (ver abajo)
 └── README.md                          # Este archivo
 ```
 
@@ -200,7 +201,7 @@ Reproduce las cifras previas de la tesis; no usarlo como estimacion de desempeno
   [0.820, 0.881]) | sentimiento **0.498** (IC 95% [0.411, 0.577]).
 - Categoria: **F1 macro 0.511 / micro 0.552** (IC 95% [0.513, 0.592]), V de Cramer 0.528.
 - Sentimiento: **F1 micro 0.218** (p = 0.009, V de Cramer 0.100).
-- Con el clasificador corregido (fix de plurales s/es y -ies, commit 984b2cc): **F1 micro
+- Con el clasificador corregido (fix de plurales s/es y -ies, commit `3ba6127`): **F1 micro
   0.559** (IC 95% [0.521, 0.598]) / **macro 0.520** (IC 95% [0.483, 0.552]), reproducible con
   `recalc_clasificador_639.py`.
 
@@ -220,16 +221,19 @@ Herramientas: `exportar_muestra.py` (censo en tandas, semilla reproducible),
 `ponderar_tanda2.py` (metricas de tanda 2 ponderadas por diseno),
 `generar_discrepancias.py`, `evaluar_ground_truth.py` (kappa, F1, IC bootstrap,
 chi-cuadrado, V de Cramer; stdlib pura) y `recalc_clasificador_639.py` (recalculo del
-clasificador corregido sobre el censo expandido, importa `classify_threat` del repo).
+clasificador corregido sobre el censo expandido, importa `classify_threat` del repo;
+stdlib pura, se ejecuta desde cualquier directorio con `python ground_truth/recalc_clasificador_639.py`)
+y `sensibilidad_piloto.py` (sensibilidad exacta de la adjudicacion del piloto: 22 discrepancias
+a favor de E1 vs. E2).
 Guia completa: `GUIA_ETIQUETADO.md`. Registros: `registro_sesiones.md` (tanda 1) y
 `registro_adjudicacion_piloto.md` (piloto, 28/9/2026).
 
-## Ventana de operacion continua (C-05)
+## Ventana de operacion continua
 
 Ventana de 23/10 22:00 a 28/10 11:00 ART: ejecuciones #226 a #335, **110 ciclos, todos
 `success`, 76.900 upserts y 358 altas nuevas en 96 de las 110 horas** (en las 14 restantes
-solo hubo re-encuentros). Evidencia en `ground_truth/c05_ventana_ciclos.csv` y
-`ground_truth/c05_altas_por_hora.csv`; metodo y limitaciones en `ground_truth/README_c05.md`.
+solo hubo re-encuentros). Evidencia en `ground_truth/ventana_continua_ciclos.csv` y
+`ground_truth/ventana_continua_altas_por_hora.csv`; metodo y limitaciones en `ground_truth/README_ventana.md`.
 El umbral de 48-72 h es un criterio operativo fijado a posteriori.
 
 ## Limitaciones documentadas
@@ -268,6 +272,12 @@ docker-compose up -d
   sola vez, en la extraccion (`entry_to_record`). `osint_classify.py` no vuelve a hashear.
   La sal se lee de la variable de entorno `AUTHOR_SALT`; el codigo no tiene valor por defecto
   y falla si falta.
+- **Pipeline (desde el 12/11/2026):** `entry_to_record` elimina el pie
+  `submitted by /u/<usuario> [link] [comments]` **antes** de asignar `content` y `raw_content`,
+  por lo que los registros nuevos no guardan el nombre de usuario en claro. Los registros
+  anteriores de `posts` se sanean con `scripts/limpiar_pie_usuario.sql` (idempotente; ver el
+  encabezado del archivo). Se ejecuto el 12/11/2026 sobre la base local: 4.339 de los 4.343
+  registros tenian el pie; tras la limpieza quedan 0 en `content` y `raw_content`.
 - **Datasets de `ground_truth/`:** se elimino el pie `submitted by /u/<usuario> [link] [comments]`
   de `content` y `raw_content`, y la columna `author` se regenero con la sal vigente
   (2.053 de 2.056 filas con esquema unico verificado; 3 publicaciones sin pie, sin usuario
@@ -279,7 +289,7 @@ docker-compose up -d
   username que figuraba en un titulo y la contrasena de desarrollo de PostgreSQL. Quien haya
   clonado o bifurcado el repositorio antes de esa reescritura conserva la version anterior,
   por lo que la sal anterior debe considerarse comprometida y no se reutiliza.
-- **Base de datos local:** la tabla `posts` de PostgreSQL (4.276 registros al 11/11/2026) **no se
+- **Base de datos local:** la tabla `posts` de PostgreSQL (4.276 registros al 11/11/2026; 4.343 al 12/11/2026) **no se
   rehasheo**: los autores historicos conservan los hashes previos al cambio de sal; las
   ejecuciones nuevas desde el 11/11/2026 usan `AUTHOR_SALT` por entorno. La base no se publica.
 - **Servicios:** PostgreSQL, n8n y Metabase solo escuchan en `127.0.0.1`; las credenciales
