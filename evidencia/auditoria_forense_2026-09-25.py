@@ -35,7 +35,7 @@ def q20_30(con: sqlite3.Connection, label: str) -> None:
         print("   ", r)
 
 
-print("### PUNTO 2: ejecuciones 23-27 (SELECT literal del profesor)")
+print("### PUNTO 2: ejecuciones 23-27 (consulta SQL literal de la consigna)")
 
 con = ro(LIVE)
 total = con.execute("SELECT COUNT(*), MIN(id), MAX(id) FROM execution_entity").fetchone()

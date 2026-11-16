@@ -22,7 +22,14 @@ Archivos de entrada (todos publicados en este directorio):
   - eval1_639.csv, eval2_639.csv, resuelto_639.csv  (consenso humano adjudicado)
 
 Uso (desde cualquier directorio; solo biblioteca estandar):
-    python ground_truth/recalc_clasificador_639.py
+    python ground_truth/recalc_clasificador_639.py              # clasificador CORREGIDO
+    python ground_truth/recalc_clasificador_639.py --original   # control SIN corregir
+
+Con --original se reclasifica con la version original del clasificador (palabra
+completa, sin plurales ni -ies, sensible a mayusculas sobre texto en minusculas),
+como control: F1 micro = 0,556 y F1 macro = 0,513. Los valores 48 y 28 son las celdas
+de la matriz (humano `otro` predicho como phishing / no_clasificado); con el
+corregido son 55 y 20.
 """
 import csv
 import os
@@ -78,6 +85,30 @@ except ImportError:
             if counts[cat] > counts[best]:
                 best = cat
         return best if counts[best] else "no_clasificado"
+
+
+def build_classifier_original():
+    """Version original del clasificador (antes del commit 3ba6127): sin plurales."""
+    try:
+        from osint_pipeline import THREAT_KEYWORDS as kw, TIEBREAK_ORDER as order  # type: ignore
+    except ImportError:
+        kw, order = THREAT_KEYWORDS, TIEBREAK_ORDER
+    regexes = {
+        cat: [re.compile(r"(?<![a-z0-9])" + r"\s+".join(re.escape(w) for w in t.split())
+                         + r"(?![a-z0-9])") for t in terms]
+        for cat, terms in kw.items()
+    }
+
+    def classify(text):
+        lowered = text.lower()
+        counts = {c: sum(len(rx.findall(lowered)) for rx in rs) for c, rs in regexes.items()}
+        best = order[0]
+        for cat in order:
+            if counts[cat] > counts[best]:
+                best = cat
+        return best if counts[best] else "no_clasificado"
+
+    return classify
 
 
 def per_class(y_true, y_pred):
@@ -145,7 +176,9 @@ def load_consensus():
     return consensus
 
 
-def main():
+def main(argv=None):
+    original = "--original" in (sys.argv[1:] if argv is None else argv)
+    classify = build_classifier_original() if original else classify_threat_FIX
     consensus = load_consensus()
     text_by_pid = load_text(set(consensus))
     assert set(consensus) == set(text_by_pid), (
@@ -153,12 +186,13 @@ def main():
     )
     ids = sorted(consensus)
     y_true = [consensus[pid] for pid in ids]
-    y_pred = [classify_threat_FIX(text_by_pid[pid]) for pid in ids]
+    y_pred = [classify(text_by_pid[pid]) for pid in ids]
 
+    etiqueta = "ORIGINAL (sin corregir)" if original else "CORREGIDO (-ies)"
     stats = per_class(y_true, y_pred)
     micro = f1_micro(y_true, y_pred)
     macro = f1_macro(y_true, y_pred)
-    print(f"\n--- CORREGIDO (-ies) -- N={len(y_true)} F1 micro={micro:.3f} F1 macro={macro:.3f} ---")
+    print(f"\n--- {etiqueta} -- N={len(y_true)} F1 micro={micro:.3f} F1 macro={macro:.3f} ---")
     for lab, (pp, rr, ff, ss) in zip(LABELS, stats):
         print(f"  {lab:16s} P={pp:.3f} R={rr:.3f} F1={ff:.3f} n={ss}")
 
@@ -167,6 +201,11 @@ def main():
     print(" ", LABELS)
     for lab, row in zip(LABELS, cm):
         print(" ", lab, list(row))
+
+    i_otro = LABELS.index("otro")
+    print(f"\nPosts que el consenso humano etiqueta `otro`: predichos como phishing = "
+          f"{cm[LABELS.index('phishing')][i_otro]}, como no_clasificado = "
+          f"{cm[LABELS.index('no_clasificado')][i_otro]}")
 
     random.seed(42)
     n = len(y_true)

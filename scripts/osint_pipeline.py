@@ -198,14 +198,21 @@ def fetch_feed(subreddit: str):
 
 def fetch_feed_with_retry(subreddit: str):
     last = None
-    for wait in (0,) + RETRY_BACKOFF_SECONDS:
+    # Primer intento inmediato; antes de cada reintento se espera el backoff
+    # correspondiente. Tras el ultimo fallo no se duerme: se abandona.
+    waits = (0,) + RETRY_BACKOFF_SECONDS
+    for attempt, wait in enumerate(waits):
+        if wait:
+            time.sleep(wait)
         try:
             return fetch_feed(subreddit)
         except Exception as exc:
             last = exc
-            LOG.warning("r/%s falló: %s (retry en %ss)", subreddit, exc, wait)
-            if wait:
-                time.sleep(wait)
+            if attempt + 1 < len(waits):
+                LOG.warning("r/%s falló: %s (reintento en %ss)", subreddit, exc,
+                            waits[attempt + 1])
+            else:
+                LOG.warning("r/%s falló: %s (sin más reintentos)", subreddit, exc)
     raise RuntimeError(f"r/{subreddit} agotó reintentos: {last}")
 
 

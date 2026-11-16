@@ -224,7 +224,10 @@ chi-cuadrado, V de Cramer; stdlib pura) y `recalc_clasificador_639.py` (recalcul
 clasificador corregido sobre el censo expandido, importa `classify_threat` del repo;
 stdlib pura, se ejecuta desde cualquier directorio con `python ground_truth/recalc_clasificador_639.py`)
 y `sensibilidad_piloto.py` (sensibilidad exacta de la adjudicacion del piloto: 22 discrepancias
-a favor de E1 vs. E2).
+a favor de E1 vs. E2) y `exploratorio_anexo_f.py` (verificaciones exploratorias del Anexo F sobre las 102
+publicaciones del corte: VADER, linea de base todo-neutral, palabras clave original/corregido y
+TF-IDF + regresion logistica; el ML requiere scikit-learn). `recalc_clasificador_639.py --original`
+reproduce el control sin corregir.
 Guia completa: `GUIA_ETIQUETADO.md`. Registros: `registro_sesiones.md` (tanda 1) y
 `registro_adjudicacion_piloto.md` (piloto, 28/9/2026).
 

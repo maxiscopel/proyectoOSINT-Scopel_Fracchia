@@ -104,6 +104,14 @@ G. Fracchia (etiquetado manual) y E2 = M. Scopel (clasificación ciega asistida 
 revisada y confirmada por M. Scopel)**. En la tanda 1 (3/9/2026) y en la tanda 2, E1 = M. Scopel
 y E2 = G. Fracchia, sin LLM.
 
+**Alcance completo de la corrección (ampliación).** El texto original de septiembre no solo
+atribuía el rol de Evaluador 1 a M. Scopel: también atribuía a M. Scopel la revisión y
+confirmación de las etiquetas del Evaluador 2 («REVISADA Y CONFIRMADA por M. Scopel»). Es
+decir, el original ubicaba a la misma persona en ambos procesos (E1 y revisión de E2). La
+atribución vigente (E1 = G. Fracchia; E2 = M. Scopel, asistido por LLM y revisado por
+M. Scopel) separa ambos roles, y se apoya **exclusivamente en la declaración conjunta de los
+autores, sin respaldo documental contemporáneo independiente**.
+
 **Evidencia en que se apoya.** La atribución vigente se apoya en la declaración conjunta de
 los autores y en los registros de sesión (`registro_sesiones.md`, que cubre la tanda 1). No
 existe un registro contemporáneo independiente de quién etiquetó cada archivo del piloto:
