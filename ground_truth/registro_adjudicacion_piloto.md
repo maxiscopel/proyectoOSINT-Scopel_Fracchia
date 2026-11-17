@@ -65,7 +65,8 @@ M. Scopel) separa ambos roles, y se apoya **exclusivamente en la declaración co
 autores, sin respaldo documental contemporáneo independiente**.
 
 **Evidencia en que se apoya.** La atribución vigente se apoya en la declaración conjunta de
-los autores y en los registros de sesión (`registro_sesiones.md`, que cubre la tanda 1). No
+los autores, sin respaldo documental contemporáneo independiente: `registro_sesiones.md`
+cubre solo la tanda 1 y no respalda la atribución del piloto. No
 existe un registro contemporáneo independiente de quién etiquetó cada archivo del piloto:
 `muestra_eval1.csv` y `muestra_eval2.csv` son plantillas vacías e idénticas, y el registro
 contemporáneo (el texto original de arriba) indicaba otra cosa. Se declara así en la tesis (§5.6).

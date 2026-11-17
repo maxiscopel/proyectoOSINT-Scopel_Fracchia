@@ -40,3 +40,7 @@ backup /home/node/.n8n/backup_db/pre_validate_fix_20260914.sqlite: 75 ejecucione
      cmd: python3 /data/scripts/osint_fetch.py --subreddits netsec cybersecurity malware phishing malwareanalysis secopsdaily threatintel --limit 100 --out /tmp/osint_raw.json
 
 Evidencia completa -> /data/scripts/workflow_versiones_2026-09-25.json
+
+### NOTA (17/11/2026): salida historica congelada del 25/09/2026. Se conserva literal, sin editar, la
+### consulta de la consigna recibida, rotulada en el encabezado como «SELECT literal del profesor» (consulta del
+### evaluador academico). La nota no forma parte de la salida original.
