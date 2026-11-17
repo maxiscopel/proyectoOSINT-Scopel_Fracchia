@@ -27,9 +27,13 @@ Uso (desde cualquier directorio; solo biblioteca estandar):
 
 Con --original se reclasifica con la version original del clasificador (palabra
 completa, sin plurales ni -ies, sensible a mayusculas sobre texto en minusculas),
-como control: F1 micro = 0,556 y F1 macro = 0,513. Los valores 48 y 28 son las celdas
-de la matriz (humano `otro` predicho como phishing / no_clasificado); con el
-corregido son 55 y 20.
+como control: F1 micro = 0,557 (IC 95 % [0,520; 0,596]) y F1 macro = 0,514
+(IC 95 % [0,479; 0,546]). Los valores 48 y 28 son las celdas de la matriz (humano
+`otro` predicho como phishing / no_clasificado); con el corregido son 55 y 20.
+Nota: sobre los CSV previos a la anonimizacion el control daba 355/639 aciertos
+(0,556 / 0,513); el acierto adicional (356/639) responde a la anonimizacion de la
+mencion `u/usuario` en el post `1wn9jc3`. El clasificador corregido no cambia
+(0,559 / 0,520).
 """
 import csv
 import os
