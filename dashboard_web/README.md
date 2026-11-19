@@ -12,7 +12,7 @@ docker compose -p ttesis up -d --build   # desde repo/, con .env (POSTGRES_*, AU
 ```
 
 Endpoints: `GET /api/stats`, `GET /api/posts` (page, page_size, sort, order, category, sentiment, subreddit, q),
-`GET /api/posts/export` (CSV con los filtros activos), `POST /api/posts/{id}/translate` (traduce al espanol con deep-translator; troceo en bloques de 4.500 caracteres; 429/502 con mensaje claro si Google limita o no hay red), `POST /api/posts` (clasifica un texto con `classify_threat` + VADER y lo guarda), `PATCH /api/posts/{id}` (triage), `DELETE /api/posts/{id}`, `POST /api/pipeline/sync`, `GET /api/health`.
+`GET /api/posts/export` (CSV con los filtros activos), `POST /api/posts/{id}/translate` (traduce al espanol: Google Translate con fallback a MyMemory en-GB->es-ES en bloques de 450 caracteres, cache en memoria; 503 con mensaje claro si ambos fallan; MyMemory anonimo tiene cuota diaria), `POST /api/posts` (clasifica un texto con `classify_threat` + VADER y lo guarda), `PATCH /api/posts/{id}` (triage), `DELETE /api/posts/{id}`, `POST /api/pipeline/sync`, `GET /api/health`.
 
 Notas:
 - `sync`: si `N8N_WEBHOOK_URL` esta definida llama a ese webhook (el workflow actual no tiene trigger webhook);

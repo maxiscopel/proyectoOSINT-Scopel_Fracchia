@@ -191,33 +191,62 @@ def _split_text(text: str, limit: int = TRANSLATE_CHUNK) -> list[str]:
     return [c for c in chunks if c.strip()] or [""]
 
 
-def _translate(text: str) -> str:
-    from deep_translator import GoogleTranslator
+MYMEMORY_CHUNK = 450          # MyMemory admite ~500 caracteres por request
+_TRANSLATION_CACHE: dict[str, dict] = {}   # post_id -> respuesta exitosa (en memoria del proceso)
+_CACHE_MAX = 1000
+
+
+def _translate_with(translator, text: str, limit: int) -> str:
     if not text or not text.strip():
         return text or ""
-    tr = GoogleTranslator(source="auto", target="es")
-    # se conservan los espacios de borde de cada bloque para no pegar palabras al unirlos
-    return "".join(tr.translate(c) or "" for c in _split_text(text))
+    out = []
+    for chunk in _split_text(text, limit):
+        res = translator.translate(chunk) or ""
+        if res.upper().startswith("MYMEMORY WARNING"):   # cuota diaria agotada: MyMemory lo devuelve como texto
+            raise RuntimeError(res[:200])
+        out.append(res)
+    return "".join(out)
+
+
+def _translate_post_texts(title: str, content: str) -> tuple[str, str, str]:
+    """Google primero; si falla o limita, MyMemory (en-GB -> es-ES, bloques de 450). Devuelve (titulo, contenido, proveedor)."""
+    from deep_translator import GoogleTranslator, MyMemoryTranslator
+    errors = []
+    try:
+        g = GoogleTranslator(source="auto", target="es")
+        return (_translate_with(g, title, TRANSLATE_CHUNK), _translate_with(g, content, TRANSLATE_CHUNK), "google")
+    except Exception as exc:  # noqa: BLE001
+        errors.append(f"google: {type(exc).__name__}")
+        LOG.warning("Google Translate fallo (%s); se usa MyMemory", exc)
+    try:
+        m = MyMemoryTranslator(source="en-GB", target="es-ES")
+        return (_translate_with(m, title, MYMEMORY_CHUNK), _translate_with(m, content, MYMEMORY_CHUNK), "mymemory")
+    except Exception as exc:  # noqa: BLE001
+        errors.append(f"mymemory: {type(exc).__name__}: {str(exc)[:120]}")
+        raise RuntimeError("; ".join(errors)) from exc
 
 
 @app.post("/api/posts/{post_id}/translate", tags=["posts"])
 async def translate_post(post_id: str):
-    """Traduce al espanol (Google Translate via deep-translator) el titulo y el contenido de un post."""
+    """Traduce al espanol titulo y contenido: Google Translate con fallback a MyMemory y cache en memoria."""
+    cached = _TRANSLATION_CACHE.get(post_id)
+    if cached:
+        return {**cached, "cached": True}
     with db.pool.connection() as c:
         row = c.execute("SELECT title, content FROM posts WHERE post_id = %s", (post_id,)).fetchone()
     if not row:
         raise HTTPException(404, "Publicacion no encontrada")
     try:
-        title = await run_in_threadpool(_translate, row["title"])
-        content = await run_in_threadpool(_translate, row["content"] or "")
-    except Exception as exc:  # noqa: BLE001 - red caida, limite del servicio, etc.
-        LOG.warning("traduccion fallo: %s", exc)
-        if type(exc).__name__ == "TooManyRequests":
-            raise HTTPException(429, "El servicio de traduccion limito las solicitudes desde esta conexion; "
-                                     "esperar unos minutos y reintentar") from exc
-        raise HTTPException(502, "No se pudo traducir: el servicio externo de traduccion no respondio "
-                                 "(revisar la conexion a internet y reintentar)") from exc
-    return {"post_id": post_id, "title": title, "content": content, "target": "es", "provider": "google"}
+        title, content, provider = await run_in_threadpool(_translate_post_texts, row["title"], row["content"] or "")
+    except Exception as exc:  # noqa: BLE001 - ambos servicios fallaron
+        LOG.warning("traduccion fallo en todos los proveedores: %s", exc)
+        raise HTTPException(503, "No se pudo traducir: Google Translate y MyMemory no respondieron o limitaron "
+                                 "las solicitudes desde esta conexion; reintentar en unos minutos") from exc
+    result = {"post_id": post_id, "title": title, "content": content, "target": "es", "provider": provider}
+    if len(_TRANSLATION_CACHE) >= _CACHE_MAX:
+        _TRANSLATION_CACHE.pop(next(iter(_TRANSLATION_CACHE)))
+    _TRANSLATION_CACHE[post_id] = result
+    return {**result, "cached": False}
 
 
 @app.patch("/api/posts/{post_id}", response_model=Post, tags=["posts"])
