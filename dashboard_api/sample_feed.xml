@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Muestra local de entradas reales del RSS de Reddit (respaldo de sincronizacion)</title>
+  <id>urn:osint-cyberwatch:sample-feed</id>
+  <updated>2026-11-17T15:49:43+00:00</updated>
+  <entry>
+    <author><name>/u/sample_feed</name></author>
+    <content type="html">&lt;p&gt;Attackers exploited a vulnerability in Optimizely&amp;#x27;s website experimentation platform to inject malicious JavaScript into scripts loaded by legitimate websites. Security researchers at Report URI identified affected scripts associated with at least 178 organizations, including CNN, BBC, Zoom, Salesforce and Ledger. The malicious code attempted to replace cryptocurrency wallet addresses, steal payment-card information and, on iOS devices, load an exploit kit. Optimizely says it has fixed the vulnerability and removed the malicious code. Researchers have not confirmed successful iPhone compromises or the number of stolen payment details. A legitimate HTTPS website can deliver malicious code through a compromised third-party service without its own servers being hacked. For cryptocurrency users, wallet-address substitution is particularly dangerous.&lt;/p&gt;</content>
+    <id>t3_1xynvyr</id>
+    <link href="https://www.reddit.com/r/cybersecurity/comments/1xynvyr/major_website_supplychain_attack_affects_at_least/"/>
+    <updated>2026-11-17T15:49:43+00:00</updated>
+    <published>2026-11-17T15:49:43+00:00</published>
+    <title>Major website supply-chain attack affects at least 178 organizations</title>
+  </entry>
+  <entry>
+    <author><name>/u/sample_feed</name></author>
+    <content type="html">&lt;p&gt;I was working with someone the other day. They received a paperless post greeting card, proceeded to enter their email and password(no password manager) manually. The screen icon spun and presented a place to enter the 6 digit 2FA code. I saw the above, but I did not see the actual message appear only my friend&amp;#x27;s phone. I suspect earlier in the morning he had signed into google because he had a legit message. Have any of you received a 2FA request in this manner and did the SMS really go to you? Just trying to get an idea of how sophisticated these phishing scams are getting.&lt;/p&gt;</content>
+    <id>t3_1xymgom</id>
+    <link href="https://www.reddit.com/r/phishing/comments/1xymgom/greeting_card_scam_with_2fa/"/>
+    <updated>2026-11-17T14:54:03+00:00</updated>
+    <published>2026-11-17T14:54:03+00:00</published>
+    <title>Greeting Card Scam with 2FA?</title>
+  </entry>
+  <entry>
+    <author><name>/u/sample_feed</name></author>
+    <content type="html">&lt;p&gt;The confirmed compromise is malicious code inside responses served from third-party providersâ€™ own script and widget endpoints. The affected files are not simply innocent names appearing in a requestâ€™s initiator stack. Kirkâ€™s expanded evidence records the response bytes, size and SHA-256 for 15 website captures, spanning 16 vendor responses. Hudson Rock independently matched those hashes to the supplied archive records and directly recovered nine poisoned vendor files. The affected asset associations span news, banking, communications, software and business services. Their importance comes from the audiences that trust these websites and the actions a browser may perform after it loads the script.&lt;/p&gt;</content>
+    <id>t3_1xy2ofi</id>
+    <link href="https://www.reddit.com/r/cybersecurity/comments/1xy2ofi/poisoned_scripts_on_bbc_zoom_and_other_major/"/>
+    <updated>2026-11-16T22:01:49+00:00</updated>
+    <published>2026-11-16T22:01:49+00:00</published>
+    <title>Poisoned Scripts on BBC, Zoom and Other Major Websites Linked to iPhone Exploit Loaders</title>
+  </entry>
+  <entry>
+    <author><name>/u/sample_feed</name></author>
+    <content type="html">&lt;p&gt;Just launched on github: https://github.com/Mafarricos/badbox-tv-audit To check if your android tv box (google tv, android tv) if there is malware and tries to fix it. Mostly because this new XCPE Botnet discovered. Let me know if it helped, it&amp;#x27;s optimized to be run by your AI agent, but if you understand scripts you can run it by yourself&lt;/p&gt;</content>
+    <id>t3_1xwdm12</id>
+    <link href="https://www.reddit.com/r/Malware/comments/1xwdm12/android_tv_google_tv_forensic_suite_badbox_xcpe/"/>
+    <updated>2026-11-14T21:19:30+00:00</updated>
+    <published>2026-11-14T21:19:30+00:00</published>
+    <title>Android TV &amp; Google TV Forensic Suite (BadBox, XCPE, Vo1d &amp; Malware Remediation)</title>
+  </entry>
+</feed>

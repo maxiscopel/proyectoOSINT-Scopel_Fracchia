@@ -73,8 +73,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:?definir POSTGRES_DB en .env}
       POSTGRES_HOST: osint-postgres
       AUTHOR_SALT: ${AUTHOR_SALT:?definir AUTHOR_SALT en .env}
-      # Opcional: webhook de n8n para "Sincronizar Fuentes Ahora"; si esta vacio, la API corre el pipeline localmente
-      N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-}
+      # Webhook de n8n (workflow osint_sync_webhook); si no responde, la API corre osint_pipeline.py y, ante HTTP 429, procesa sample_feed.xml
+      N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-http://maxi-n8n:5678/webhook/osint-sync}
     volumes:
       - ./scripts:/pipeline:ro
     depends_on:

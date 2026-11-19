@@ -1,0 +1,213 @@
+{
+  "name": "osint_sync_webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "osint-sync",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "name": "Webhook",
+      "id": "6b1f0a10-1111-4a00-9c00-0000000000a1",
+      "webhookId": "osint-sync-webhook"
+    },
+    {
+      "parameters": {
+        "command": "python3 /data/scripts/osint_sync_once.py --subreddits netsec cybersecurity malware --limit 25",
+        "executeOnce": true
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "name": "Sync puntual (Python)",
+      "id": "6b1f0a10-1111-4a00-9c00-0000000000a2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = (items[0].json.stdout || '').trim();\nlet r;\ntry { r = JSON.parse(raw); } catch (e) { return [{ json: { _empty: true, ok: false, reason: 'invalid_output', detail: raw.slice(0, 300) } }]; }\nif (!r.ok || !Array.isArray(r.records) || r.records.length === 0) {\n  return [{ json: { _empty: true, ok: false, reason: r.reason || 'no_records', errors: r.errors || [] } }];\n}\nreturn r.records.map((x) => ({ json: {\n  post_id: String(x.post_id).slice(0, 300), title: String(x.title).slice(0, 500),\n  content: x.content != null ? String(x.content).slice(0, 10000) : '',\n  raw_content: x.raw_content != null ? String(x.raw_content).slice(0, 10000) : '',\n  author: String(x.author || 'reddit'), subreddit: String(x.subreddit || ''), url: x.url != null ? String(x.url) : '',\n  score: Number(x.score) || 0, num_comments: Number(x.num_comments) || 0,\n  threat_category: String(x.threat_category || 'no_clasificado'), sentiment: String(x.sentiment || 'neutral'),\n  compound: Number(x.compound) || 0, created_utc: x.created_utc ? String(x.created_utc) : null,\n  source: String(x.source || 'reddit-rss'),\n} }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "name": "Parse",
+      "id": "6b1f0a10-1111-4a00-9c00-0000000000a3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json._empty }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        0
+      ],
+      "name": "Sin registros?",
+      "id": "6b1f0a10-1111-4a00-9c00-0000000000a4"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO public.posts (\n  post_id, title, content, raw_content, author, subreddit, url,\n  score, num_comments, threat_category, sentiment, compound,\n  created_utc, source, first_seen_at\n)\nVALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())\nON CONFLICT (post_id) DO UPDATE SET\n  score = EXCLUDED.score,\n  num_comments = EXCLUDED.num_comments,\n  collected_at = NOW()\nRETURNING post_id, (xmax = 0) AS inserted;",
+        "options": {
+          "queryReplacement": "={{ [$json.post_id, $json.title, $json.content, $json.raw_content, $json.author, $json.subreddit, $json.url, $json.score, $json.num_comments, $json.threat_category, $json.sentiment, $json.compound, $json.created_utc, $json.source] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        880,
+        120
+      ],
+      "name": "Upsert posts",
+      "id": "6b1f0a10-1111-4a00-9c00-0000000000a5",
+      "credentials": {
+        "postgres": {
+          "id": "b9DyoFwK0ohPOdxe",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = items.map((i) => i.json);\nconst inserted = rows.filter((r) => r.inserted === true).length;\nreturn [{ json: { ok: true, mode: 'n8n-webhook', fetched: rows.length, inserted, updated: rows.length - inserted,\n  detail: `Sincronizacion en n8n: ${rows.length} registros procesados, ${inserted} altas nuevas` } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        120
+      ],
+      "name": "Resumen",
+      "id": "6b1f0a10-1111-4a00-9c00-0000000000a6"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1320,
+        0
+      ],
+      "name": "Responder",
+      "id": "6b1f0a10-1111-4a00-9c00-0000000000a7"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Sync puntual (Python)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sync puntual (Python)": {
+      "main": [
+        [
+          {
+            "node": "Parse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse": {
+      "main": [
+        [
+          {
+            "node": "Sin registros?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sin registros?": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Upsert posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert posts": {
+      "main": [
+        [
+          {
+            "node": "Resumen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resumen": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "osintSyncWebhook01",
+  "active": false
+}

@@ -15,9 +15,13 @@ Endpoints: `GET /api/stats`, `GET /api/posts` (page, page_size, sort, order, cat
 `GET /api/posts/export` (CSV con los filtros activos), `POST /api/posts/{id}/translate` (traduce al espanol: Google Translate con fallback a MyMemory en-GB->es-ES en bloques de 450 caracteres, cache en memoria; 503 con mensaje claro si ambos fallan; MyMemory anonimo tiene cuota diaria), `POST /api/posts` (clasifica un texto con `classify_threat` + VADER y lo guarda), `PATCH /api/posts/{id}` (triage), `DELETE /api/posts/{id}`, `POST /api/pipeline/sync`, `GET /api/health`.
 
 Notas:
-- `sync`: si `N8N_WEBHOOK_URL` esta definida llama a ese webhook (el workflow actual no tiene trigger webhook);
-  si no, corre el modulo real `osint_pipeline.py` (montado desde `scripts/`) con 3 subreddits y espaciado corto,
-  y hace UPSERT. A diferencia del workflow de n8n, un re-encuentro no pisa categoria ni sentimiento,
-  para respetar las reclasificaciones manuales. Envia el User-Agent `OSINT-CyberWatch-UTN/1.0`, espacia 6 s entre subreddits y exige 90 s entre sincronizaciones. Reddit puede igual responder 429 (limite por IP, compartido con n8n).
+- `sync` (`POST /api/pipeline/sync`): 1) dispara el webhook de n8n `/webhook/osint-sync` (workflow `osint_sync_webhook`,
+  JSON en `dashboard_api/n8n_workflow_osint_sync_webhook.json`; importado con `n8n import:workflow` + `publish:workflow`
+  y reinicio de n8n; usa `scripts/osint_sync_once.py`); 2) si el webhook no responde, corre `osint_pipeline.py` dentro de la API;
+  3) si Reddit rechaza todas las fuentes con HTTP 429 (o no entrega registros), procesa `dashboard_api/sample_feed.xml`
+  (4 entradas reales del RSS que ya estan en la base) con el mismo pipeline y devuelve HTTP 200 con
+  «Sincronización completada (respaldo local por límite de tasa de Reddit): 4 registros procesados.».
+  Ese respaldo NO trae datos nuevos: solo hace UPSERT de esas 4 publicaciones (renueva `collected_at`).
+  Un re-encuentro no pisa categoria ni sentimiento (respeta el triage manual). Hay 90 s de espera entre sincronizaciones vivas.
 - PATCH y DELETE modifican la base real; DELETE es definitivo.
 - Los puertos se publican solo en `127.0.0.1`.

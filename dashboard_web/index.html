@@ -406,7 +406,7 @@ syncBtn.onclick = async () => {
   syncBtn.disabled = true; syncSpin.classList.remove("hidden"); syncTxt.textContent = "Sincronizando…";
   try {
     const r = await api("/api/pipeline/sync", {method: "POST"});
-    toast((r.ok ? "Sincronización completa: " : "Sincronización con problemas: ") + r.detail, r.ok);
+    toast(r.ok ? r.detail : "Sincronización con problemas: " + r.detail, r.ok);
     await Promise.all([loadStats(), loadPosts()]);
   } catch (err) { toast("Error al sincronizar: " + err.message, false); }
   finally { syncBtn.disabled = false; syncSpin.classList.add("hidden"); syncTxt.textContent = "Sincronizar Fuentes Ahora"; }

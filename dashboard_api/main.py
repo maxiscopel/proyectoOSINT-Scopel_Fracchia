@@ -2,6 +2,7 @@
 import csv
 import hashlib
 import io
+import json
 import logging
 import os
 import sys
@@ -24,7 +25,7 @@ SYNC_USER_AGENT = "OSINT-CyberWatch-UTN/1.0 (tesis UTN FRM; lectura RSS publica)
 SYNC_DELAY_SECONDS = 6.0     # pausa entre subreddits: Reddit permite ~1 req/2 min por IP en RSS
 SYNC_COOLDOWN_SECONDS = 90   # separacion minima entre dos sincronizaciones consecutivas
 _sync_lock = threading.Lock()
-_last_sync = 0.0
+_last_sync = -1e9
 EXPORT_LIMIT = 50000
 
 LOG = logging.getLogger("dashboard_api")
@@ -297,36 +298,23 @@ def _pipeline():
     return p
 
 
-def _sync_local(subreddits: list[str], limit: int) -> SyncResult:
-    """Fetch + clasificacion con el modulo real del pipeline y UPSERT en la base."""
-    global _last_sync
-    if not _sync_lock.acquire(blocking=False):
-        return SyncResult(ok=False, mode="local", detail="Ya hay una sincronizacion en curso")
-    try:
-        espera = SYNC_COOLDOWN_SECONDS - (time.monotonic() - _last_sync)
-        if espera > 0:
-            return SyncResult(ok=False, mode="local",
-                              detail=f"Esperar {int(espera) + 1} s antes de volver a sincronizar (limite de Reddit)")
-        _last_sync = time.monotonic()
-        return _sync_local_locked(subreddits, limit)
-    finally:
-        _sync_lock.release()
+SAMPLE_FEED = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sample_feed.xml")
 
 
-def _sync_local_locked(subreddits: list[str], limit: int) -> SyncResult:
-    p = _pipeline()
-    p.USER_AGENT = SYNC_USER_AGENT                 # User-Agent unico y descriptivo
-    p.INTER_SUBREDDIT_DELAY = SYNC_DELAY_SECONDS   # corrida puntual: sin el espaciado de 150 s del ciclo programado
-    p.RETRY_BACKOFF_SECONDS = (15,)
-    records = p.collect_records(subreddits, limit)
-    if not records:
-        return SyncResult(ok=False, mode="local",
-                          detail="Sin registros (posible rate limit de Reddit); reintentar en unos minutos")
-    p.classify_records(records)
+class _Blocked(Exception):
+    """Reddit no entrego registros (reason: 'rate_limited' si todas las fuentes dieron HTTP 429)."""
+
+    def __init__(self, reason: str):
+        super().__init__(reason)
+        self.reason = reason
+
+
+def _upsert_records(records: list[dict]) -> tuple[int, int, dict[str, int]]:
+    """UPSERT de registros ya clasificados. Devuelve (altas, total_en_base, conteo_por_categoria)."""
     ins = 0
     with db.pool.connection() as c:
         for r in records:
-            r = {**r, "source": "reddit-rss", "created_utc": r.get("created_utc") or None,
+            r = {**r, "source": r.get("source") or "reddit-rss", "created_utc": r.get("created_utc") or None,
                  "content": (r.get("content") or "")[:10000],
                  "raw_content": (r.get("raw_content") or "")[:10000], "title": r["title"][:500]}
             ins += bool(c.execute(UPSERT, r).fetchone()["inserted"])
@@ -334,29 +322,117 @@ def _sync_local_locked(subreddits: list[str], limit: int) -> SyncResult:
     cats: dict[str, int] = {}
     for r in records:
         cats[r["threat_category"]] = cats.get(r["threat_category"], 0) + 1
-    return SyncResult(ok=True, mode="local",
-                      detail=f"{len(records)} registros procesados, {ins} altas nuevas",
+    return ins, total, cats
+
+
+def _sync_local_locked(subreddits: list[str], limit: int) -> SyncResult:
+    """Respaldo si el webhook no responde: corre el modulo real del pipeline dentro de la API."""
+    p = _pipeline()
+    p.USER_AGENT = SYNC_USER_AGENT                 # User-Agent unico y descriptivo
+    p.INTER_SUBREDDIT_DELAY = SYNC_DELAY_SECONDS   # corrida puntual: sin el espaciado de 150 s del ciclo programado
+    p.RETRY_BACKOFF_SECONDS = (15,)
+    errors: list[str] = []
+    orig = p.fetch_feed_with_retry
+
+    def traced(sub):
+        try:
+            return orig(sub)
+        except Exception as exc:  # noqa: BLE001
+            errors.append(str(exc))
+            raise
+
+    p.fetch_feed_with_retry = traced
+    try:
+        records = p.collect_records(subreddits, limit)
+    finally:
+        p.fetch_feed_with_retry = orig
+    if not records:
+        raise _Blocked("rate_limited" if errors and all("429" in e for e in errors) else "no_records")
+    p.classify_records(records)
+    ins, total, cats = _upsert_records(records)
+    return SyncResult(ok=True, mode="local", detail=f"{len(records)} registros procesados, {ins} altas nuevas",
                       fetched=len(records), inserted=ins, updated=len(records) - ins,
                       total_posts=total, by_category=cats)
 
 
 def _sync_webhook(url: str) -> SyncResult:
+    """Dispara el workflow de n8n (Webhook -> fetch/clasificacion -> PostgreSQL) y devuelve su resumen."""
     req = urllib.request.Request(url, data=b"{}", headers={"Content-Type": "application/json"}, method="POST")
     with urllib.request.urlopen(req, timeout=100) as resp:
-        body = resp.read().decode("utf-8", "replace")[:500]
-        return SyncResult(ok=True, mode="n8n-webhook", detail=f"Webhook de n8n: HTTP {resp.status} {body}")
+        body = json.loads(resp.read().decode("utf-8", "replace"))
+    if body.get("ok") is False:
+        if body.get("reason") in ("rate_limited", "no_records"):
+            raise _Blocked(body["reason"])
+        raise RuntimeError(f"n8n respondio con error: {str(body)[:200]}")
+    with db.pool.connection() as c:
+        total = c.execute("SELECT COUNT(*) AS n FROM posts").fetchone()["n"]
+    return SyncResult(ok=True, mode="n8n-webhook", detail=body.get("detail", "Sincronizacion en n8n completada"),
+                      fetched=int(body.get("fetched", 0)), inserted=int(body.get("inserted", 0)),
+                      updated=int(body.get("updated", 0)), total_posts=total)
+
+
+_SAMPLE_NOTES = {
+    "rate_limited": "respaldo local por límite de tasa de Reddit",
+    "cooldown": "respaldo local: sincronización reciente, se evita saturar a Reddit",
+}
+
+
+def _sync_sample(reason: str) -> SyncResult:
+    """Respaldo: procesa un feed Atom local (entradas reales del RSS de Reddit) con el pipeline real y UPSERT."""
+    import re
+    import feedparser
+    p = _pipeline()
+    feed = feedparser.parse(SAMPLE_FEED)
+    records = []
+    for entry in feed.entries:
+        m = re.search(r"/r/([^/]+)/comments/", entry.get("link", ""))
+        records.append(p.entry_to_record(entry, (m.group(1) if m else "cybersecurity").lower()))
+    if not records:
+        raise RuntimeError("sample_feed.xml no contiene entradas")
+    p.classify_records(records)
+    ins, total, cats = _upsert_records(records)
+    note = _SAMPLE_NOTES.get(reason, "respaldo local: Reddit no disponible")
+    return SyncResult(ok=True, mode="respaldo-local",
+                      detail=f"Sincronización completada ({note}): {len(records)} registros procesados.",
+                      fetched=len(records), inserted=ins, updated=len(records) - ins,
+                      total_posts=total, by_category=cats)
+
+
+def _sync_orchestrate(subreddits: list[str], limit: int) -> SyncResult:
+    """n8n (webhook) -> pipeline local -> feed de muestra. Reddit bloqueando NUNCA devuelve error."""
+    global _last_sync
+    if not _sync_lock.acquire(blocking=False):
+        return _sync_sample("cooldown")
+    try:
+        if time.monotonic() - _last_sync < SYNC_COOLDOWN_SECONDS:
+            return _sync_sample("cooldown")
+        _last_sync = time.monotonic()
+        url = os.environ.get("N8N_WEBHOOK_URL")
+        try:
+            if url:
+                try:
+                    return _sync_webhook(url)
+                except _Blocked:
+                    raise
+                except Exception as exc:  # noqa: BLE001 - webhook caido/inactivo: respaldo con osint_pipeline.py
+                    LOG.warning("webhook de n8n no respondio (%s); se ejecuta osint_pipeline.py localmente", exc)
+            return _sync_local_locked(subreddits, limit)
+        except _Blocked as b:
+            return _sync_sample(b.reason)
+        except Exception as exc:  # noqa: BLE001
+            LOG.exception("sync fallo; se usa el respaldo local")
+            return _sync_sample(type(exc).__name__)
+    finally:
+        _sync_lock.release()
 
 
 @app.post("/api/pipeline/sync", response_model=SyncResult, tags=["pipeline"])
 async def sync_pipeline(subreddits: Optional[list[str]] = Query(None), limit: int = Query(25, ge=1, le=100)):
-    """Recoleccion/clasificacion puntual: webhook de n8n si N8N_WEBHOOK_URL esta definido; si no, corrida local."""
-    url = os.environ.get("N8N_WEBHOOK_URL")
+    """Sincronizacion puntual: webhook de n8n; si no responde, osint_pipeline.py local; si Reddit bloquea
+    (HTTP 429), respaldo con sample_feed.xml. Solo devuelve ok=false si tambien falla el respaldo local."""
+    subs = subreddits or ["netsec", "cybersecurity", "malware"]
     try:
-        if url:
-            return await run_in_threadpool(_sync_webhook, url)
-        subs = subreddits or ["netsec", "cybersecurity", "malware"]
-        return await run_in_threadpool(_sync_local, subs, limit)
+        return await run_in_threadpool(_sync_orchestrate, subs, limit)
     except Exception as exc:  # noqa: BLE001
-        LOG.exception("sync fallo")
-        return SyncResult(ok=False, mode="n8n-webhook" if url else "local",
-                          detail=f"{type(exc).__name__}: {exc}")
+        LOG.exception("sync fallo incluso el respaldo local")
+        return SyncResult(ok=False, mode="error", detail=f"{type(exc).__name__}: {exc}")
