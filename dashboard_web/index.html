@@ -131,7 +131,10 @@
     <p id="mBody" class="mt-4 text-sm text-slate-300 whitespace-pre-wrap break-words"></p>
     <div class="mt-5 flex justify-between items-center text-xs text-slate-400">
       <span id="mId" class="mono"></span>
-      <a id="mLink" target="_blank" rel="noopener noreferrer" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 px-3 py-2 rounded-lg text-sm">Abrir post original en Reddit ↗</a>
+      <div class="flex gap-2 items-center">
+        <button id="mTr" type="button" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 px-3 py-2 rounded-lg text-sm disabled:opacity-60">🌐 Traducir al español</button>
+        <a id="mLink" target="_blank" rel="noopener noreferrer" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 px-3 py-2 rounded-lg text-sm">Abrir post original en Reddit ↗</a>
+      </div>
     </div>
   </div>
 </div>
@@ -278,6 +281,7 @@ document.getElementById("rows").addEventListener("click", async e => {
   const act = e.target.dataset.act; if (!act) return;
   const id = e.target.closest("tr").dataset.id, r = rowsData[id];
   if (act === "view") {
+    mPost = r; showOriginal();
     mTitle.textContent = r.title;
     mMeta.innerHTML = badge(r.threat_category, CAT_COLOR) + badge(r.sentiment, SENT_COLOR) +
       `<span class="px-2 py-0.5 rounded-full border border-slate-700 text-slate-300">r/${esc(r.subreddit)}</span>` +
@@ -311,6 +315,40 @@ document.getElementById("fPend").onclick = () => setFilter("category", "no_clasi
 document.getElementById("fClear").onclick = () => { Object.assign(state, {category: "", sentiment: "", subreddit: "", q: "", page: 1}); syncControls(); loadPosts(); };
 document.getElementById("thDate").onclick = () => { state.order = state.order === "desc" ? "asc" : "desc"; thDate.textContent = "Fecha " + (state.order === "desc" ? "▾" : "▴"); loadPosts(); };
 prev.onclick = () => { state.page--; loadPosts(); }; next.onclick = () => { state.page++; loadPosts(); };
+
+/* ---------- Traducción (caché en memoria por post) ---------- */
+const trCache = new Map();   // post_id -> {title, content}
+let mPost = null, mTranslated = false;
+const ORIG_BODY = () => mPost.content || "(sin contenido; ver el post original)";
+function showOriginal() {
+  mTranslated = false;
+  if (!mPost) return;
+  mTitle.textContent = mPost.title; mBody.textContent = ORIG_BODY();
+  document.getElementById("trBadge")?.remove();
+  mTr.textContent = "🌐 Traducir al español"; mTr.disabled = false;
+}
+function showTranslated(t) {
+  mTranslated = true;
+  mTitle.textContent = t.title; mBody.textContent = t.content || ORIG_BODY();
+  if (!document.getElementById("trBadge"))
+    mMeta.insertAdjacentHTML("beforeend", '<span id="trBadge" class="mono px-2 py-0.5 rounded-full border border-emerald-500/40 text-emerald-300 bg-emerald-500/10">Traducido al español</span>');
+  mTr.textContent = "Ver original (EN)"; mTr.disabled = false;
+}
+mTr.onclick = async () => {
+  if (!mPost) return;
+  if (mTranslated) return showOriginal();
+  const id = mPost.post_id;
+  if (trCache.has(id)) return showTranslated(trCache.get(id));
+  mTr.disabled = true; mTr.textContent = "Traduciendo...";
+  try {
+    const t = await api("/api/posts/" + encodeURIComponent(id) + "/translate", {method: "POST"});
+    trCache.set(id, t);
+    if (mPost && mPost.post_id === id) showTranslated(t); else mTr.disabled = false;
+  } catch (err) {
+    mTr.disabled = false; mTr.textContent = "🌐 Traducir al español";
+    toast("No se pudo traducir: " + err.message, false);
+  }
+};
 
 /* ---------- Exportar CSV ---------- */
 document.getElementById("fExport").onclick = () => {

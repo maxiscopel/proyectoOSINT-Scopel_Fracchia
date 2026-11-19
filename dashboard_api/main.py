@@ -176,6 +176,50 @@ def get_post(post_id: str):
     return row
 
 
+TRANSLATE_CHUNK = 4500
+
+
+def _split_text(text: str, limit: int = TRANSLATE_CHUNK) -> list[str]:
+    """Divide en bloques <= limit, cortando en saltos de linea o espacios (nunca a mitad de palabra)."""
+    chunks = []
+    while len(text) > limit:
+        cut = max(text.rfind("\n", 0, limit), text.rfind(". ", 0, limit) + 1, text.rfind(" ", 0, limit))
+        cut = cut if cut > 0 else limit
+        chunks.append(text[:cut])
+        text = text[cut:]
+    chunks.append(text)
+    return [c for c in chunks if c.strip()] or [""]
+
+
+def _translate(text: str) -> str:
+    from deep_translator import GoogleTranslator
+    if not text or not text.strip():
+        return text or ""
+    tr = GoogleTranslator(source="auto", target="es")
+    # se conservan los espacios de borde de cada bloque para no pegar palabras al unirlos
+    return "".join(tr.translate(c) or "" for c in _split_text(text))
+
+
+@app.post("/api/posts/{post_id}/translate", tags=["posts"])
+async def translate_post(post_id: str):
+    """Traduce al espanol (Google Translate via deep-translator) el titulo y el contenido de un post."""
+    with db.pool.connection() as c:
+        row = c.execute("SELECT title, content FROM posts WHERE post_id = %s", (post_id,)).fetchone()
+    if not row:
+        raise HTTPException(404, "Publicacion no encontrada")
+    try:
+        title = await run_in_threadpool(_translate, row["title"])
+        content = await run_in_threadpool(_translate, row["content"] or "")
+    except Exception as exc:  # noqa: BLE001 - red caida, limite del servicio, etc.
+        LOG.warning("traduccion fallo: %s", exc)
+        if type(exc).__name__ == "TooManyRequests":
+            raise HTTPException(429, "El servicio de traduccion limito las solicitudes desde esta conexion; "
+                                     "esperar unos minutos y reintentar") from exc
+        raise HTTPException(502, "No se pudo traducir: el servicio externo de traduccion no respondio "
+                                 "(revisar la conexion a internet y reintentar)") from exc
+    return {"post_id": post_id, "title": title, "content": content, "target": "es", "provider": "google"}
+
+
 @app.patch("/api/posts/{post_id}", response_model=Post, tags=["posts"])
 def reclassify_post(post_id: str, body: PostUpdate):
     """Triage humano: el analista reclasifica categoria y/o sentimiento."""
