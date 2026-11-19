@@ -4,10 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>OSINT CyberWatch — Panel de Inteligencia de Amenazas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = {theme: {extend: {fontFamily: {sans: ["Inter", "system-ui", "sans-serif"], mono: ["JetBrains Mono", "ui-monospace", "monospace"]}}}}</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-  body { background:#0b1220; }
+  body { background:#0b1220; font-family:"Inter",system-ui,sans-serif; line-height:1.55; -webkit-font-smoothing:antialiased; font-feature-settings:"cv11","ss01"; }
+  h1,h2,h3 { letter-spacing:-.015em; }
+  .mono { font-family:"JetBrains Mono",ui-monospace,monospace; font-size:.78em; }
+  .kpi { font-variant-numeric:tabular-nums; letter-spacing:-.03em; line-height:1.1; }
+  .muted { color:#94a3b8; }
+  input, select, button { font-family:inherit; }
+  input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible { outline:2px solid #22d3ee; outline-offset:2px; }
+  .line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .card { background:#111a2e; border:1px solid #1f2b45; border-radius:.75rem; }
   select.inline { background:#0b1220; border:1px solid #2a3a5c; border-radius:.375rem; padding:.2rem .35rem; font-size:.75rem; color:#e2e8f0; }
   .modal-bg { background:rgba(2,6,23,.75); }
@@ -33,6 +44,7 @@
         <span class="w-2 h-2 rounded-full bg-slate-500"></span> Comprobando base…
       </span>
       <a href="/api/docs-redirect" id="docsLink" target="_blank" class="text-xs text-cyan-300 hover:text-cyan-200 underline underline-offset-4">API Docs (Swagger)</a>
+      <button id="newBtn" class="border border-cyan-400/60 text-cyan-300 hover:bg-cyan-400/10 font-semibold text-sm px-4 py-2 rounded-lg transition">+ Clasificar Texto / Nueva Alerta</button>
       <button id="syncBtn" class="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold text-sm px-4 py-2 rounded-lg transition disabled:opacity-60">
         <svg id="syncSpin" class="w-4 h-4 hidden spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 3a9 9 0 1 0 9 9" stroke-linecap="round"/></svg>
         <span id="syncTxt">Sincronizar Fuentes Ahora</span>
@@ -45,22 +57,22 @@
 
   <!-- KPIs -->
   <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-    <div class="card p-4"><p class="text-xs uppercase tracking-wide text-slate-400">Total de Alertas Monitoreadas</p><p id="kTotal" class="text-3xl font-bold text-white mt-1">—</p><p id="kLast" class="text-xs text-slate-500 mt-1">&nbsp;</p></div>
-    <div class="card p-4 border-red-500/40"><p class="text-xs uppercase tracking-wide text-red-300">Amenazas Críticas</p><p id="kCrit" class="text-3xl font-bold text-red-400 mt-1">—</p><p class="text-xs text-slate-500 mt-1">ransomware + phishing</p></div>
-    <div class="card p-4 border-amber-500/40"><p class="text-xs uppercase tracking-wide text-amber-300">Pendientes de Triage</p><p id="kPend" class="text-3xl font-bold text-amber-300 mt-1">—</p><p class="text-xs text-slate-500 mt-1">no_clasificado</p></div>
-    <div class="card p-4 border-orange-500/40"><p class="text-xs uppercase tracking-wide text-orange-300">Vulnerabilidades Detectadas</p><p id="kVuln" class="text-3xl font-bold text-orange-400 mt-1">—</p><p class="text-xs text-slate-500 mt-1">vulnerabilidad</p></div>
+    <div class="card p-4"><p class="text-xs uppercase tracking-wide text-slate-400">Total de Alertas Monitoreadas</p><p id="kTotal" class="kpi text-3xl font-bold text-white mt-1">—</p><p id="kLast" class="mono text-xs text-slate-400 mt-1">&nbsp;</p></div>
+    <div class="card p-4 border-red-500/40"><p class="text-xs uppercase tracking-wide text-red-300">Amenazas Críticas</p><p id="kCrit" class="kpi text-3xl font-bold text-red-400 mt-1">—</p><p class="text-xs text-slate-400 mt-1">ransomware + phishing</p></div>
+    <div class="card p-4 border-amber-500/40"><p class="text-xs uppercase tracking-wide text-amber-300">Pendientes de Triage</p><p id="kPend" class="kpi text-3xl font-bold text-amber-300 mt-1">—</p><p class="text-xs text-slate-400 mt-1">no_clasificado</p></div>
+    <div class="card p-4 border-orange-500/40"><p class="text-xs uppercase tracking-wide text-orange-300">Vulnerabilidades Detectadas</p><p id="kVuln" class="kpi text-3xl font-bold text-orange-400 mt-1">—</p><p class="text-xs text-slate-400 mt-1">vulnerabilidad</p></div>
   </section>
 
   <!-- Gráficos -->
   <section class="grid lg:grid-cols-2 gap-4">
     <div class="card p-4">
       <h2 class="text-sm font-semibold text-white">Distribución por Categoría de Amenaza</h2>
-      <p class="text-xs text-slate-500 mb-2">Clic en un segmento para filtrar la bandeja</p>
+      <p class="text-xs text-slate-400 mb-2">Clic en un segmento para filtrar la bandeja</p>
       <div class="h-72"><canvas id="chCat"></canvas></div>
     </div>
     <div class="card p-4">
       <h2 class="text-sm font-semibold text-white">Sentimiento por Fuente (subreddit)</h2>
-      <p class="text-xs text-slate-500 mb-2">Clic en una barra para filtrar por fuente</p>
+      <p class="text-xs text-slate-400 mb-2">Clic en una barra para filtrar por fuente</p>
       <div class="h-72"><canvas id="chSub"></canvas></div>
     </div>
   </section>
@@ -70,7 +82,7 @@
     <div class="p-4 border-b border-slate-800 space-y-3">
       <div class="flex items-center justify-between flex-wrap gap-2">
         <h2 class="text-base font-semibold text-white">Bandeja de Triage y Gestión</h2>
-        <span id="resCount" class="text-xs text-slate-400"></span>
+        <span id="resCount" class="mono text-xs text-slate-400"></span>
       </div>
       <div class="flex flex-wrap gap-2">
         <input id="fQ" type="search" placeholder="Buscar en título y contenido…" class="flex-1 min-w-[220px] bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-400">
@@ -79,6 +91,7 @@
         <select id="fSub" class="bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm"><option value="">Todo subreddit</option></select>
         <button id="fPend" class="border border-amber-400/60 text-amber-300 hover:bg-amber-400/10 text-sm px-3 py-2 rounded-lg">Ver solo pendientes (no_clasificado)</button>
         <button id="fClear" class="text-slate-400 hover:text-white text-sm px-2">Limpiar</button>
+        <button id="fExport" class="border border-emerald-400/60 text-emerald-300 hover:bg-emerald-400/10 text-sm px-3 py-2 rounded-lg">⬇ Exportar CSV</button>
       </div>
     </div>
     <div class="overflow-x-auto">
@@ -97,14 +110,14 @@
       </table>
     </div>
     <div class="p-3 flex items-center justify-between border-t border-slate-800 text-xs text-slate-400">
-      <span id="pageInfo"></span>
+      <span id="pageInfo" class="mono"></span>
       <div class="flex gap-2">
         <button id="prev" class="px-3 py-1.5 rounded border border-slate-700 hover:bg-slate-800 disabled:opacity-40">← Anterior</button>
         <button id="next" class="px-3 py-1.5 rounded border border-slate-700 hover:bg-slate-800 disabled:opacity-40">Siguiente →</button>
       </div>
     </div>
   </section>
-  <footer class="text-center text-xs text-slate-600 pb-6">OSINT CyberWatch · Reddit RSS → n8n → Python → PostgreSQL · Tesis UTN FRM, Scopel &amp; Fracchia</footer>
+  <footer class="text-center text-xs text-slate-500 pb-6">OSINT CyberWatch · Reddit RSS → n8n → Python → PostgreSQL · Tesis UTN FRM, Scopel &amp; Fracchia</footer>
 </main>
 
 <!-- Modal detalle -->
@@ -116,14 +129,42 @@
     </div>
     <div id="mMeta" class="flex flex-wrap gap-2 mt-3 text-xs"></div>
     <p id="mBody" class="mt-4 text-sm text-slate-300 whitespace-pre-wrap break-words"></p>
-    <div class="mt-5 flex justify-between items-center text-xs text-slate-500">
-      <span id="mId"></span>
+    <div class="mt-5 flex justify-between items-center text-xs text-slate-400">
+      <span id="mId" class="mono"></span>
       <a id="mLink" target="_blank" rel="noopener noreferrer" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 px-3 py-2 rounded-lg text-sm">Abrir post original en Reddit ↗</a>
     </div>
   </div>
 </div>
 
-<div id="toasts" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+<!-- Modal nueva alerta / clasificación manual -->
+<div id="nModal" class="hidden fixed inset-0 z-40 modal-bg flex items-center justify-center p-4">
+  <form id="nForm" class="card max-w-xl w-full max-h-[90vh] overflow-y-auto p-5 space-y-4">
+    <div class="flex justify-between items-start gap-4">
+      <div>
+        <h3 class="text-lg font-semibold text-white">Clasificar Texto / Nueva Alerta</h3>
+        <p class="text-xs text-slate-400">El texto pasa por el clasificador por palabras clave y VADER del pipeline, y se guarda en PostgreSQL.</p>
+      </div>
+      <button type="button" id="nClose" class="text-slate-400 hover:text-white text-xl leading-none">×</button>
+    </div>
+    <label class="block text-sm"><span class="text-slate-300">Título *</span>
+      <input id="nTitle" required minlength="3" maxlength="500" class="mt-1 w-full bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-400" placeholder="Ej.: New LockBit ransomware variant targets hospitals"></label>
+    <label class="block text-sm"><span class="text-slate-300">Texto</span>
+      <textarea id="nText" rows="6" maxlength="10000" class="mt-1 w-full bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-400" placeholder="Pegá aquí el contenido de la publicación o del reporte…"></textarea></label>
+    <div class="grid sm:grid-cols-2 gap-3">
+      <label class="block text-sm"><span class="text-slate-300">Fuente</span>
+        <input id="nSource" maxlength="100" value="manual" class="mono mt-1 w-full bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 focus:outline-none focus:border-cyan-400"></label>
+      <label class="block text-sm"><span class="text-slate-300">URL (opcional)</span>
+        <input id="nUrl" type="url" class="mono mt-1 w-full bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 focus:outline-none focus:border-cyan-400" placeholder="https://…"></label>
+    </div>
+    <div id="nResult" class="hidden rounded-lg border border-cyan-500/40 bg-cyan-500/5 p-3 text-sm"></div>
+    <div class="flex justify-end gap-2">
+      <button type="button" id="nCancel" class="px-4 py-2 text-sm text-slate-300 hover:text-white">Cerrar</button>
+      <button id="nSave" class="bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold text-sm px-4 py-2 rounded-lg disabled:opacity-60">Clasificar y guardar</button>
+    </div>
+  </form>
+</div>
+
+<div id="toasts"class="fixed bottom-4 right-4 z-50 space-y-2"></div>
 
 <script>
 const CATS = ["no_clasificado","vulnerabilidad","malware","phishing","ransomware","otro"];
@@ -151,7 +192,7 @@ function toast(msg, ok = true) {
   setTimeout(() => el.remove(), 5000);
 }
 
-const badge = (v, colors) => `<span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium" style="background:${colors[v] || "#334155"}22;color:${colors[v] || "#94a3b8"};border:1px solid ${colors[v] || "#334155"}66">${esc(v)}</span>`;
+const badge = (v, colors) => `<span class="mono inline-block px-2 py-0.5 rounded-full font-medium" style="background:${colors[v] || "#334155"}22;color:${colors[v] || "#94a3b8"};border:1px solid ${colors[v] || "#334155"}66">${esc(v)}</span>`;
 const options = (list, sel) => list.map(v => `<option value="${v}" ${v === sel ? "selected" : ""}>${v}</option>`).join("");
 
 /* ---------- Estadísticas y gráficos ---------- */
@@ -209,8 +250,8 @@ async function loadPosts() {
   prev.disabled = state.page <= 1; next.disabled = state.page >= pages;
   document.getElementById("rows").innerHTML = d.items.length ? d.items.map(r => `
     <tr class="row border-t border-slate-800/70" data-id="${esc(r.post_id)}">
-      <td class="px-3 py-2 whitespace-nowrap text-slate-400">${fdate(r.created_utc)}</td>
-      <td class="px-3 py-2 whitespace-nowrap text-cyan-300">r/${esc(r.subreddit)}</td>
+      <td class="mono px-3 py-2 whitespace-nowrap text-slate-400">${fdate(r.created_utc)}</td>
+      <td class="mono px-3 py-2 whitespace-nowrap text-cyan-300">r/${esc(r.subreddit)}</td>
       <td class="px-3 py-2 max-w-md"><span class="line-clamp-2">${esc(r.title)}</span></td>
       <td class="px-3 py-2">${badge(r.threat_category, CAT_COLOR)}<br><select class="inline mt-1" data-f="threat_category">${options(CATS, r.threat_category)}</select></td>
       <td class="px-3 py-2">${badge(r.sentiment, SENT_COLOR)}<br><select class="inline mt-1" data-f="sentiment">${options(SENTS, r.sentiment)}</select></td>
@@ -218,7 +259,7 @@ async function loadPosts() {
         <button data-act="view" class="text-cyan-300 hover:underline mr-3">Ver detalle</button>
         <button data-act="del" class="text-red-400 hover:underline">Descartar</button>
       </td>
-    </tr>`).join("") : `<tr><td colspan="6" class="px-3 py-10 text-center text-slate-500">Sin resultados para los filtros actuales</td></tr>`;
+    </tr>`).join("") : `<tr><td colspan="6" class="px-3 py-10 text-center text-slate-400">Sin resultados para los filtros actuales</td></tr>`;
   rowsData = Object.fromEntries(d.items.map(r => [r.post_id, r]));
 }
 let rowsData = {};
@@ -270,6 +311,38 @@ document.getElementById("fPend").onclick = () => setFilter("category", "no_clasi
 document.getElementById("fClear").onclick = () => { Object.assign(state, {category: "", sentiment: "", subreddit: "", q: "", page: 1}); syncControls(); loadPosts(); };
 document.getElementById("thDate").onclick = () => { state.order = state.order === "desc" ? "asc" : "desc"; thDate.textContent = "Fecha " + (state.order === "desc" ? "▾" : "▴"); loadPosts(); };
 prev.onclick = () => { state.page--; loadPosts(); }; next.onclick = () => { state.page++; loadPosts(); };
+
+/* ---------- Exportar CSV ---------- */
+document.getElementById("fExport").onclick = () => {
+  const p = new URLSearchParams();
+  ["category", "sentiment", "subreddit", "q"].forEach(k => state[k] && p.set(k, state[k]));
+  toast(`Exportando ${fmt(total)} registros con los filtros activos…`);
+  const a = document.createElement("a");
+  a.href = "/api/posts/export?" + p; a.download = ""; document.body.appendChild(a); a.click(); a.remove();
+};
+
+/* ---------- Nueva alerta / clasificación manual ---------- */
+const nModal = document.getElementById("nModal"), nResult = document.getElementById("nResult");
+const closeN = () => nModal.classList.add("hidden");
+newBtn.onclick = () => { nResult.classList.add("hidden"); nModal.classList.remove("hidden"); nTitle.focus(); };
+nClose.onclick = nCancel.onclick = closeN;
+nModal.onclick = e => { if (e.target === nModal) closeN(); };
+nForm.onsubmit = async e => {
+  e.preventDefault(); nSave.disabled = true;
+  try {
+    const body = {title: nTitle.value.trim(), content: nText.value.trim(), source: nSource.value.trim() || "manual"};
+    if (nUrl.value.trim()) body.url = nUrl.value.trim();
+    const r = await api("/api/posts", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+    nResult.innerHTML = `<p class="font-semibold text-white mb-2">Resultado del clasificador</p><div class="flex flex-wrap gap-2 items-center">${badge(r.threat_category, CAT_COLOR)}${badge(r.sentiment, SENT_COLOR)}<span class="mono muted">VADER compound ${r.compound.toFixed(3)}</span><span class="mono muted">${esc(r.post_id)}</span></div>`;
+    nResult.classList.remove("hidden");
+    toast(`Alerta guardada: ${r.threat_category} / ${r.sentiment}`);
+    nTitle.value = nText.value = nUrl.value = "";
+    Object.assign(state, {category: "", sentiment: "", subreddit: "", q: "", page: 1, sort: "created_utc", order: "desc"}); syncControls();
+    await Promise.all([loadStats(), loadPosts()]);
+  } catch (err) { toast("No se pudo guardar: " + err.message, false); }
+  finally { nSave.disabled = false; }
+};
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeN(); });
 
 /* ---------- Modal ---------- */
 mClose.onclick = () => modal.classList.add("hidden");

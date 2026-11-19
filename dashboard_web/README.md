@@ -12,12 +12,12 @@ docker compose -p ttesis up -d --build   # desde repo/, con .env (POSTGRES_*, AU
 ```
 
 Endpoints: `GET /api/stats`, `GET /api/posts` (page, page_size, sort, order, category, sentiment, subreddit, q),
-`PATCH /api/posts/{id}` (triage), `DELETE /api/posts/{id}`, `POST /api/pipeline/sync`, `GET /api/health`.
+`GET /api/posts/export` (CSV con los filtros activos), `POST /api/posts` (clasifica un texto con `classify_threat` + VADER y lo guarda), `PATCH /api/posts/{id}` (triage), `DELETE /api/posts/{id}`, `POST /api/pipeline/sync`, `GET /api/health`.
 
 Notas:
 - `sync`: si `N8N_WEBHOOK_URL` esta definida llama a ese webhook (el workflow actual no tiene trigger webhook);
   si no, corre el modulo real `osint_pipeline.py` (montado desde `scripts/`) con 3 subreddits y espaciado corto,
   y hace UPSERT. A diferencia del workflow de n8n, un re-encuentro no pisa categoria ni sentimiento,
-  para respetar las reclasificaciones manuales. Reddit puede responder 429 (limite por IP).
+  para respetar las reclasificaciones manuales. Envia el User-Agent `OSINT-CyberWatch-UTN/1.0`, espacia 6 s entre subreddits y exige 90 s entre sincronizaciones. Reddit puede igual responder 429 (limite por IP, compartido con n8n).
 - PATCH y DELETE modifican la base real; DELETE es definitivo.
 - Los puertos se publican solo en `127.0.0.1`.

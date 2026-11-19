@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 Category = Literal["no_clasificado", "vulnerabilidad", "malware", "phishing", "ransomware", "otro"]
 Sentiment = Literal["positivo", "neutral", "negativo"]
@@ -29,6 +29,13 @@ class PostPage(BaseModel):
     page: int
     page_size: int
     items: list[Post]
+
+
+class NewPost(BaseModel):
+    title: str = Field(min_length=3, max_length=500)
+    content: str = Field(default="", max_length=10000)
+    source: str = Field(default="manual", max_length=100, description="Fuente/subreddit de origen")
+    url: Optional[str] = Field(default=None, max_length=2000)
 
 
 class PostUpdate(BaseModel):

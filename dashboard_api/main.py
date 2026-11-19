@@ -1,17 +1,31 @@
 """OSINT CyberWatch - API REST (FastAPI) sobre la tabla `posts` del pipeline OSINT."""
+import csv
+import hashlib
+import io
 import logging
 import os
 import sys
+import threading
+import time
 import urllib.request
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 
 import database as db
-from schemas import Category, Post, PostPage, PostUpdate, Sentiment, SyncResult
+from schemas import Category, NewPost, Post, PostPage, PostUpdate, Sentiment, SyncResult
+
+SYNC_USER_AGENT = "OSINT-CyberWatch-UTN/1.0 (tesis UTN FRM; lectura RSS publica)"
+SYNC_DELAY_SECONDS = 6.0     # pausa entre subreddits: Reddit permite ~1 req/2 min por IP en RSS
+SYNC_COOLDOWN_SECONDS = 90   # separacion minima entre dos sincronizaciones consecutivas
+_sync_lock = threading.Lock()
+_last_sync = 0.0
+EXPORT_LIMIT = 50000
 
 LOG = logging.getLogger("dashboard_api")
 POST_COLS = ("post_id, title, content, author, subreddit, url, score, num_comments, "
@@ -104,6 +118,55 @@ def list_posts(page: int = Query(1, ge=1), page_size: int = Query(25, ge=1, le=2
     return {"total": total, "page": page, "page_size": page_size, "items": rows}
 
 
+def _csv_cell(v):
+    """Neutraliza inyeccion de formulas al abrir el CSV en Excel/Sheets."""
+    if v is None:
+        return ""
+    s = v.isoformat(sep=" ") if isinstance(v, datetime) else str(v)
+    return "'" + s if s[:1] in ("=", "+", "-", "@", "\t", "\r") else s
+
+
+@app.get("/api/posts/export", tags=["posts"])
+def export_posts(category: Optional[Category] = None, sentiment: Optional[Sentiment] = None,
+                 subreddit: Optional[str] = None, q: Optional[str] = Query(None, max_length=200)):
+    """Descarga en CSV (UTF-8 con BOM) los registros que cumplen los filtros activos."""
+    where, params = _where(category, sentiment, subreddit, q)
+    cols = ["post_id", "created_utc", "subreddit", "title", "content", "threat_category",
+            "sentiment", "compound", "score", "num_comments", "url", "author", "collected_at"]
+    with db.pool.connection() as c:
+        rows = c.execute(f"SELECT {', '.join(cols[:7])}, compound::float AS compound, score, num_comments, "
+                         f"url, author, collected_at FROM posts{where} ORDER BY created_utc DESC NULLS LAST, post_id "
+                         "LIMIT %s", params + [EXPORT_LIMIT]).fetchall()
+    buf = io.StringIO()
+    w = csv.writer(buf, lineterminator="\r\n")
+    w.writerow(cols)
+    for r in rows:
+        w.writerow([_csv_cell(r[k]) for k in cols])
+    name = f"osint_posts_{datetime.now(timezone.utc):%Y%m%d_%H%M}.csv"
+    return StreamingResponse(iter(["﻿" + buf.getvalue()]), media_type="text/csv; charset=utf-8",
+                             headers={"Content-Disposition": f'attachment; filename="{name}"',
+                                      "X-Total-Rows": str(len(rows))})
+
+
+@app.post("/api/posts", response_model=Post, status_code=201, tags=["posts"])
+def create_post(body: NewPost):
+    """Ingreso manual: pasa titulo+texto por el clasificador real y VADER del pipeline y lo guarda."""
+    p = _pipeline()
+    title, content = body.title.strip(), body.content.strip()
+    threat = p.classify_threat(f"{title} {content}")
+    sentiment, compound = p.analyze_sentiment(f"{title}\n{content}")
+    now = datetime.now(timezone.utc)
+    pid = "manual-" + hashlib.sha256(f"{title}|{content}|{now.isoformat()}".encode()).hexdigest()[:12]
+    with db.pool.connection() as c:
+        row = c.execute(
+            "INSERT INTO posts (post_id, title, content, raw_content, author, subreddit, url, threat_category, "
+            "sentiment, compound, created_utc, source) VALUES (%s,%s,%s,%s,'analista-manual',%s,%s,%s,%s,%s,%s,'manual') "
+            f"RETURNING {POST_COLS}",
+            (pid, title, content, content, body.source.strip() or "manual", body.url or None, threat, sentiment,
+             compound, now.replace(tzinfo=None))).fetchone()
+    return row
+
+
 @app.get("/api/posts/{post_id}", response_model=Post, tags=["posts"])
 def get_post(post_id: str):
     with db.pool.connection() as c:
@@ -152,12 +215,36 @@ RETURNING (xmax = 0) AS inserted
 """
 
 
+def _pipeline():
+    """Importa el modulo real del pipeline (montado en /pipeline)."""
+    pdir = os.environ.get("PIPELINE_DIR", "/pipeline")
+    if pdir not in sys.path:
+        sys.path.insert(0, pdir)
+    import osint_pipeline as p
+    return p
+
+
 def _sync_local(subreddits: list[str], limit: int) -> SyncResult:
     """Fetch + clasificacion con el modulo real del pipeline y UPSERT en la base."""
-    sys.path.insert(0, os.environ.get("PIPELINE_DIR", "/pipeline"))
-    import osint_pipeline as p
-    p.INTER_SUBREDDIT_DELAY = 2.0      # corrida puntual: sin el espaciado de 150 s del ciclo programado
-    p.RETRY_BACKOFF_SECONDS = (10,)
+    global _last_sync
+    if not _sync_lock.acquire(blocking=False):
+        return SyncResult(ok=False, mode="local", detail="Ya hay una sincronizacion en curso")
+    try:
+        espera = SYNC_COOLDOWN_SECONDS - (time.monotonic() - _last_sync)
+        if espera > 0:
+            return SyncResult(ok=False, mode="local",
+                              detail=f"Esperar {int(espera) + 1} s antes de volver a sincronizar (limite de Reddit)")
+        _last_sync = time.monotonic()
+        return _sync_local_locked(subreddits, limit)
+    finally:
+        _sync_lock.release()
+
+
+def _sync_local_locked(subreddits: list[str], limit: int) -> SyncResult:
+    p = _pipeline()
+    p.USER_AGENT = SYNC_USER_AGENT                 # User-Agent unico y descriptivo
+    p.INTER_SUBREDDIT_DELAY = SYNC_DELAY_SECONDS   # corrida puntual: sin el espaciado de 150 s del ciclo programado
+    p.RETRY_BACKOFF_SECONDS = (15,)
     records = p.collect_records(subreddits, limit)
     if not records:
         return SyncResult(ok=False, mode="local",
