@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OSINT CyberWatch — Panel de Inteligencia de Amenazas</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  body { background:#0b1220; }
+  .card { background:#111a2e; border:1px solid #1f2b45; border-radius:.75rem; }
+  select.inline { background:#0b1220; border:1px solid #2a3a5c; border-radius:.375rem; padding:.2rem .35rem; font-size:.75rem; color:#e2e8f0; }
+  .modal-bg { background:rgba(2,6,23,.75); }
+  tr.row:hover { background:#16223b; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin { animation: spin .8s linear infinite; }
+</style>
+</head>
+<body class="text-slate-200 min-h-screen">
+
+<!-- Header ejecutivo -->
+<header class="border-b border-slate-800 bg-[#0d1527] sticky top-0 z-30">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center text-cyan-300 font-bold">◈</div>
+      <div>
+        <h1 class="text-lg font-semibold leading-tight text-white">OSINT CyberWatch</h1>
+        <p class="text-xs text-slate-400 leading-tight">Panel de Inteligencia de Amenazas</p>
+      </div>
+    </div>
+    <div class="ml-auto flex flex-wrap items-center gap-3">
+      <span id="dbStatus" class="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full border border-slate-700 text-slate-400">
+        <span class="w-2 h-2 rounded-full bg-slate-500"></span> Comprobando base…
+      </span>
+      <a href="/api/docs-redirect" id="docsLink" target="_blank" class="text-xs text-cyan-300 hover:text-cyan-200 underline underline-offset-4">API Docs (Swagger)</a>
+      <button id="syncBtn" class="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold text-sm px-4 py-2 rounded-lg transition disabled:opacity-60">
+        <svg id="syncSpin" class="w-4 h-4 hidden spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 3a9 9 0 1 0 9 9" stroke-linecap="round"/></svg>
+        <span id="syncTxt">Sincronizar Fuentes Ahora</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+  <!-- KPIs -->
+  <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="card p-4"><p class="text-xs uppercase tracking-wide text-slate-400">Total de Alertas Monitoreadas</p><p id="kTotal" class="text-3xl font-bold text-white mt-1">—</p><p id="kLast" class="text-xs text-slate-500 mt-1">&nbsp;</p></div>
+    <div class="card p-4 border-red-500/40"><p class="text-xs uppercase tracking-wide text-red-300">Amenazas Críticas</p><p id="kCrit" class="text-3xl font-bold text-red-400 mt-1">—</p><p class="text-xs text-slate-500 mt-1">ransomware + phishing</p></div>
+    <div class="card p-4 border-amber-500/40"><p class="text-xs uppercase tracking-wide text-amber-300">Pendientes de Triage</p><p id="kPend" class="text-3xl font-bold text-amber-300 mt-1">—</p><p class="text-xs text-slate-500 mt-1">no_clasificado</p></div>
+    <div class="card p-4 border-orange-500/40"><p class="text-xs uppercase tracking-wide text-orange-300">Vulnerabilidades Detectadas</p><p id="kVuln" class="text-3xl font-bold text-orange-400 mt-1">—</p><p class="text-xs text-slate-500 mt-1">vulnerabilidad</p></div>
+  </section>
+
+  <!-- Gráficos -->
+  <section class="grid lg:grid-cols-2 gap-4">
+    <div class="card p-4">
+      <h2 class="text-sm font-semibold text-white">Distribución por Categoría de Amenaza</h2>
+      <p class="text-xs text-slate-500 mb-2">Clic en un segmento para filtrar la bandeja</p>
+      <div class="h-72"><canvas id="chCat"></canvas></div>
+    </div>
+    <div class="card p-4">
+      <h2 class="text-sm font-semibold text-white">Sentimiento por Fuente (subreddit)</h2>
+      <p class="text-xs text-slate-500 mb-2">Clic en una barra para filtrar por fuente</p>
+      <div class="h-72"><canvas id="chSub"></canvas></div>
+    </div>
+  </section>
+
+  <!-- Bandeja de triage -->
+  <section class="card">
+    <div class="p-4 border-b border-slate-800 space-y-3">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <h2 class="text-base font-semibold text-white">Bandeja de Triage y Gestión</h2>
+        <span id="resCount" class="text-xs text-slate-400"></span>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <input id="fQ" type="search" placeholder="Buscar en título y contenido…" class="flex-1 min-w-[220px] bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-400">
+        <select id="fCat" class="bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm"><option value="">Toda categoría</option></select>
+        <select id="fSent" class="bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm"><option value="">Todo sentimiento</option></select>
+        <select id="fSub" class="bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm"><option value="">Todo subreddit</option></select>
+        <button id="fPend" class="border border-amber-400/60 text-amber-300 hover:bg-amber-400/10 text-sm px-3 py-2 rounded-lg">Ver solo pendientes (no_clasificado)</button>
+        <button id="fClear" class="text-slate-400 hover:text-white text-sm px-2">Limpiar</button>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="text-xs uppercase text-slate-400 bg-[#0d1527]">
+          <tr>
+            <th class="text-left px-3 py-2 cursor-pointer select-none" id="thDate">Fecha ▾</th>
+            <th class="text-left px-3 py-2">Subreddit</th>
+            <th class="text-left px-3 py-2">Título</th>
+            <th class="text-left px-3 py-2">Categoría</th>
+            <th class="text-left px-3 py-2">Sentimiento</th>
+            <th class="text-right px-3 py-2">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="p-3 flex items-center justify-between border-t border-slate-800 text-xs text-slate-400">
+      <span id="pageInfo"></span>
+      <div class="flex gap-2">
+        <button id="prev" class="px-3 py-1.5 rounded border border-slate-700 hover:bg-slate-800 disabled:opacity-40">← Anterior</button>
+        <button id="next" class="px-3 py-1.5 rounded border border-slate-700 hover:bg-slate-800 disabled:opacity-40">Siguiente →</button>
+      </div>
+    </div>
+  </section>
+  <footer class="text-center text-xs text-slate-600 pb-6">OSINT CyberWatch · Reddit RSS → n8n → Python → PostgreSQL · Tesis UTN FRM, Scopel &amp; Fracchia</footer>
+</main>
+
+<!-- Modal detalle -->
+<div id="modal" class="hidden fixed inset-0 z-40 modal-bg flex items-center justify-center p-4">
+  <div class="card max-w-2xl w-full max-h-[85vh] overflow-y-auto p-5">
+    <div class="flex justify-between items-start gap-4">
+      <h3 id="mTitle" class="text-lg font-semibold text-white"></h3>
+      <button id="mClose" class="text-slate-400 hover:text-white text-xl leading-none">×</button>
+    </div>
+    <div id="mMeta" class="flex flex-wrap gap-2 mt-3 text-xs"></div>
+    <p id="mBody" class="mt-4 text-sm text-slate-300 whitespace-pre-wrap break-words"></p>
+    <div class="mt-5 flex justify-between items-center text-xs text-slate-500">
+      <span id="mId"></span>
+      <a id="mLink" target="_blank" rel="noopener noreferrer" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 px-3 py-2 rounded-lg text-sm">Abrir post original en Reddit ↗</a>
+    </div>
+  </div>
+</div>
+
+<div id="toasts" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+<script>
+const CATS = ["no_clasificado","vulnerabilidad","malware","phishing","ransomware","otro"];
+const SENTS = ["positivo","neutral","negativo"];
+const CAT_COLOR = {ransomware:"#ef4444",phishing:"#f97316",malware:"#a855f7",vulnerabilidad:"#eab308",otro:"#38bdf8",no_clasificado:"#64748b"};
+const SENT_COLOR = {positivo:"#22c55e",neutral:"#64748b",negativo:"#ef4444"};
+const state = {page:1, size:25, sort:"created_utc", order:"desc", category:"", sentiment:"", subreddit:"", q:""};
+let chCat, chSub, total = 0;
+
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = n => Number(n).toLocaleString("es-AR");
+const fdate = d => d ? new Date(d + (/[zZ]|[+-]\d\d:?\d\d$/.test(d) ? "" : "Z")).toLocaleString("es-AR", {dateStyle:"short", timeStyle:"short"}) : "—";
+
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || ("HTTP " + r.status));
+  return r.json();
+}
+
+function toast(msg, ok = true) {
+  const el = document.createElement("div");
+  el.className = "px-4 py-3 rounded-lg shadow-lg text-sm border " + (ok ? "bg-emerald-900/90 border-emerald-500/50 text-emerald-100" : "bg-red-900/90 border-red-500/50 text-red-100");
+  el.textContent = msg;
+  document.getElementById("toasts").appendChild(el);
+  setTimeout(() => el.remove(), 5000);
+}
+
+const badge = (v, colors) => `<span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium" style="background:${colors[v] || "#334155"}22;color:${colors[v] || "#94a3b8"};border:1px solid ${colors[v] || "#334155"}66">${esc(v)}</span>`;
+const options = (list, sel) => list.map(v => `<option value="${v}" ${v === sel ? "selected" : ""}>${v}</option>`).join("");
+
+/* ---------- Estadísticas y gráficos ---------- */
+async function loadStats() {
+  const s = await api("/api/stats");
+  const c = s.by_category;
+  document.getElementById("kTotal").textContent = fmt(s.total_posts);
+  document.getElementById("kCrit").textContent = fmt((c.ransomware || 0) + (c.phishing || 0));
+  document.getElementById("kPend").textContent = fmt(c.no_clasificado || 0);
+  document.getElementById("kVuln").textContent = fmt(c.vulnerabilidad || 0);
+  document.getElementById("kLast").textContent = "Última recolección: " + fdate(s.last_collected_at);
+
+  const subs = Object.keys(s.by_subreddit);
+  const fSub = document.getElementById("fSub");
+  if (fSub.options.length === 1) subs.forEach(x => fSub.add(new Option(`${x} (${fmt(s.by_subreddit[x])})`, x)));
+
+  const cats = CATS.filter(k => c[k]);
+  chCat?.destroy();
+  chCat = new Chart(document.getElementById("chCat"), {
+    type: "doughnut",
+    data: {labels: cats, datasets: [{data: cats.map(k => c[k]), backgroundColor: cats.map(k => CAT_COLOR[k]), borderColor: "#111a2e", borderWidth: 2}]},
+    options: {maintainAspectRatio: false, cutout: "58%",
+      plugins: {legend: {position: "right", labels: {color: "#cbd5e1"}}},
+      onClick: (_, els) => { if (els.length) { setFilter("category", cats[els[0].index]); } },
+      onHover: (e, els) => e.native.target.style.cursor = els.length ? "pointer" : "default"}
+  });
+
+  const byS = {}; s.sentiment_by_subreddit.forEach(r => (byS[r.subreddit] ||= {})[r.sentiment] = r.n);
+  chSub?.destroy();
+  chSub = new Chart(document.getElementById("chSub"), {
+    type: "bar",
+    data: {labels: subs, datasets: SENTS.map(k => ({label: k, backgroundColor: SENT_COLOR[k], data: subs.map(x => byS[x]?.[k] || 0)}))},
+    options: {indexAxis: "y", maintainAspectRatio: false,
+      scales: {x: {stacked: true, ticks: {color: "#94a3b8"}, grid: {color: "#1f2b45"}}, y: {stacked: true, ticks: {color: "#cbd5e1"}, grid: {display: false}}},
+      plugins: {legend: {labels: {color: "#cbd5e1"}}},
+      onClick: (_, els) => { if (els.length) setFilter("subreddit", subs[els[0].index]); },
+      onHover: (e, els) => e.native.target.style.cursor = els.length ? "pointer" : "default"}
+  });
+}
+
+/* ---------- Bandeja ---------- */
+function syncControls() {
+  fCat.value = state.category; fSent.value = state.sentiment; fSub.value = state.subreddit; fQ.value = state.q;
+}
+function setFilter(k, v) { state[k] = v; state.page = 1; syncControls(); loadPosts(); document.getElementById("rows").scrollIntoView({behavior: "smooth", block: "center"}); }
+
+async function loadPosts() {
+  const p = new URLSearchParams({page: state.page, page_size: state.size, sort: state.sort, order: state.order});
+  ["category", "sentiment", "subreddit", "q"].forEach(k => state[k] && p.set(k, state[k]));
+  const d = await api("/api/posts?" + p);
+  total = d.total;
+  document.getElementById("resCount").textContent = `${fmt(d.total)} publicaciones`;
+  const pages = Math.max(1, Math.ceil(d.total / state.size));
+  document.getElementById("pageInfo").textContent = `Página ${state.page} de ${fmt(pages)}`;
+  prev.disabled = state.page <= 1; next.disabled = state.page >= pages;
+  document.getElementById("rows").innerHTML = d.items.length ? d.items.map(r => `
+    <tr class="row border-t border-slate-800/70" data-id="${esc(r.post_id)}">
+      <td class="px-3 py-2 whitespace-nowrap text-slate-400">${fdate(r.created_utc)}</td>
+      <td class="px-3 py-2 whitespace-nowrap text-cyan-300">r/${esc(r.subreddit)}</td>
+      <td class="px-3 py-2 max-w-md"><span class="line-clamp-2">${esc(r.title)}</span></td>
+      <td class="px-3 py-2">${badge(r.threat_category, CAT_COLOR)}<br><select class="inline mt-1" data-f="threat_category">${options(CATS, r.threat_category)}</select></td>
+      <td class="px-3 py-2">${badge(r.sentiment, SENT_COLOR)}<br><select class="inline mt-1" data-f="sentiment">${options(SENTS, r.sentiment)}</select></td>
+      <td class="px-3 py-2 text-right whitespace-nowrap">
+        <button data-act="view" class="text-cyan-300 hover:underline mr-3">Ver detalle</button>
+        <button data-act="del" class="text-red-400 hover:underline">Descartar</button>
+      </td>
+    </tr>`).join("") : `<tr><td colspan="6" class="px-3 py-10 text-center text-slate-500">Sin resultados para los filtros actuales</td></tr>`;
+  rowsData = Object.fromEntries(d.items.map(r => [r.post_id, r]));
+}
+let rowsData = {};
+
+document.getElementById("rows").addEventListener("change", async e => {
+  const f = e.target.dataset.f; if (!f) return;
+  const id = e.target.closest("tr").dataset.id;
+  try {
+    await api("/api/posts/" + encodeURIComponent(id), {method: "PATCH", headers: {"Content-Type": "application/json"}, body: JSON.stringify({[f]: e.target.value})});
+    toast(`Reclasificado: ${f === "threat_category" ? "categoría" : "sentimiento"} → ${e.target.value}`);
+    await Promise.all([loadPosts(), loadStats()]);
+  } catch (err) { toast("No se pudo guardar: " + err.message, false); loadPosts(); }
+});
+
+document.getElementById("rows").addEventListener("click", async e => {
+  const act = e.target.dataset.act; if (!act) return;
+  const id = e.target.closest("tr").dataset.id, r = rowsData[id];
+  if (act === "view") {
+    mTitle.textContent = r.title;
+    mMeta.innerHTML = badge(r.threat_category, CAT_COLOR) + badge(r.sentiment, SENT_COLOR) +
+      `<span class="px-2 py-0.5 rounded-full border border-slate-700 text-slate-300">r/${esc(r.subreddit)}</span>` +
+      `<span class="px-2 py-0.5 rounded-full border border-slate-700 text-slate-300">${fdate(r.created_utc)}</span>` +
+      `<span class="px-2 py-0.5 rounded-full border border-slate-700 text-slate-300">score ${r.score ?? 0} · ${r.num_comments ?? 0} comentarios</span>` +
+      `<span class="px-2 py-0.5 rounded-full border border-slate-700 text-slate-300">VADER ${(r.compound ?? 0).toFixed(3)}</span>`;
+    mBody.textContent = r.content || "(sin contenido; ver el post original)";
+    mId.textContent = "ID " + r.post_id + " · autor " + r.author;
+    const ok = r.url && /^https?:\/\//i.test(r.url);
+    mLink.style.display = ok ? "" : "none"; if (ok) mLink.href = r.url;
+    modal.classList.remove("hidden");
+  } else if (act === "del") {
+    if (!confirm("¿Descartar esta publicación como ruido/falso positivo?\nSe elimina de la base de datos.\n\n" + r.title)) return;
+    try {
+      await api("/api/posts/" + encodeURIComponent(id), {method: "DELETE"});
+      toast("Publicación descartada");
+      await Promise.all([loadPosts(), loadStats()]);
+    } catch (err) { toast("No se pudo descartar: " + err.message, false); }
+  }
+});
+
+/* ---------- Filtros ---------- */
+const fCat = document.getElementById("fCat"), fSent = document.getElementById("fSent"), fSub = document.getElementById("fSub"), fQ = document.getElementById("fQ");
+CATS.forEach(c => fCat.add(new Option(c, c))); SENTS.forEach(s => fSent.add(new Option(s, s)));
+fCat.onchange = () => setFilterQuiet("category", fCat.value);
+fSent.onchange = () => setFilterQuiet("sentiment", fSent.value);
+fSub.onchange = () => setFilterQuiet("subreddit", fSub.value);
+function setFilterQuiet(k, v) { state[k] = v; state.page = 1; loadPosts(); }
+let t; fQ.oninput = () => { clearTimeout(t); t = setTimeout(() => setFilterQuiet("q", fQ.value.trim()), 300); };
+document.getElementById("fPend").onclick = () => setFilter("category", "no_clasificado");
+document.getElementById("fClear").onclick = () => { Object.assign(state, {category: "", sentiment: "", subreddit: "", q: "", page: 1}); syncControls(); loadPosts(); };
+document.getElementById("thDate").onclick = () => { state.order = state.order === "desc" ? "asc" : "desc"; thDate.textContent = "Fecha " + (state.order === "desc" ? "▾" : "▴"); loadPosts(); };
+prev.onclick = () => { state.page--; loadPosts(); }; next.onclick = () => { state.page++; loadPosts(); };
+
+/* ---------- Modal ---------- */
+mClose.onclick = () => modal.classList.add("hidden");
+modal.onclick = e => { if (e.target === modal) modal.classList.add("hidden"); };
+document.addEventListener("keydown", e => { if (e.key === "Escape") modal.classList.add("hidden"); });
+
+/* ---------- Sincronización ---------- */
+syncBtn.onclick = async () => {
+  syncBtn.disabled = true; syncSpin.classList.remove("hidden"); syncTxt.textContent = "Sincronizando…";
+  try {
+    const r = await api("/api/pipeline/sync", {method: "POST"});
+    toast((r.ok ? "Sincronización completa: " : "Sincronización con problemas: ") + r.detail, r.ok);
+    await Promise.all([loadStats(), loadPosts()]);
+  } catch (err) { toast("Error al sincronizar: " + err.message, false); }
+  finally { syncBtn.disabled = false; syncSpin.classList.add("hidden"); syncTxt.textContent = "Sincronizar Fuentes Ahora"; }
+};
+
+/* ---------- Estado de la base y arranque ---------- */
+async function health() {
+  const el = document.getElementById("dbStatus");
+  try {
+    await api("/api/health");
+    el.className = "flex items-center gap-2 text-xs px-3 py-1.5 rounded-full border border-emerald-500/50 text-emerald-300 bg-emerald-500/10";
+    el.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Base conectada (PostgreSQL)';
+  } catch {
+    el.className = "flex items-center gap-2 text-xs px-3 py-1.5 rounded-full border border-red-500/50 text-red-300 bg-red-500/10";
+    el.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-400"></span> Base sin conexión';
+  }
+}
+// Swagger vive en el puerto 8000 de la API
+docsLink.href = `${location.protocol}//${location.hostname}:8000/docs`;
+health(); setInterval(health, 30000);
+loadStats().catch(e => toast("No se pudieron cargar las estadísticas: " + e.message, false));
+loadPosts().catch(e => toast("No se pudo cargar la bandeja: " + e.message, false));
+</script>
+</body>
+</html>

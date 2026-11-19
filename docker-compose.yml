@@ -60,6 +60,43 @@ services:
     networks:
       - osint-net
 
+  # --- Panel web comercial (feature/dashboard-api) ---
+  osint-api:
+    build: ./dashboard_api
+    container_name: osint-api
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?definir POSTGRES_USER en .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?definir POSTGRES_PASSWORD en .env}
+      POSTGRES_DB: ${POSTGRES_DB:?definir POSTGRES_DB en .env}
+      POSTGRES_HOST: osint-postgres
+      AUTHOR_SALT: ${AUTHOR_SALT:?definir AUTHOR_SALT en .env}
+      # Opcional: webhook de n8n para "Sincronizar Fuentes Ahora"; si esta vacio, la API corre el pipeline localmente
+      N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-}
+    volumes:
+      - ./scripts:/pipeline:ro
+    depends_on:
+      osint-postgres:
+        condition: service_healthy
+    networks:
+      - osint-net
+
+  osint-web:
+    image: nginx:1.27-alpine
+    container_name: osint-web
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - ./dashboard_web/index.html:/usr/share/nginx/html/index.html:ro
+      - ./dashboard_web/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - osint-api
+    networks:
+      - osint-net
+
 volumes:
   osint_pgdata:
     name: osint_pgdata
