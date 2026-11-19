@@ -149,6 +149,12 @@ def export_posts(category: Optional[Category] = None, sentiment: Optional[Sentim
                                       "X-Total-Rows": str(len(rows))})
 
 
+def _clean_source(s: str) -> str:
+    """Quita el prefijo 'r/' (o '/r/') para que la fuente nunca se duplique como r/r/xxx."""
+    import re
+    return re.sub(r"^(?:/?r/)+", "", s.strip(), flags=re.IGNORECASE).strip()
+
+
 @app.post("/api/posts", response_model=Post, status_code=201, tags=["posts"])
 def create_post(body: NewPost):
     """Ingreso manual: pasa titulo+texto por el clasificador real y VADER del pipeline y lo guarda."""
@@ -163,7 +169,7 @@ def create_post(body: NewPost):
             "INSERT INTO posts (post_id, title, content, raw_content, author, subreddit, url, threat_category, "
             "sentiment, compound, created_utc, source) VALUES (%s,%s,%s,%s,'analista-manual',%s,%s,%s,%s,%s,%s,'manual') "
             f"RETURNING {POST_COLS}",
-            (pid, title, content, content, body.source.strip() or "manual", body.url or None, threat, sentiment,
+            (pid, title, content, content, _clean_source(body.source) or "manual", body.url or None, threat, sentiment,
              compound, now.replace(tzinfo=None))).fetchone()
     return row
 

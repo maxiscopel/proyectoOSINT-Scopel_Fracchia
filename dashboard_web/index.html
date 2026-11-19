@@ -25,6 +25,8 @@
     background-repeat:no-repeat; background-position:right .55rem center; color-scheme:dark; }
   select.pill:disabled { opacity:.6; cursor:wait; }
   select.pill option { background-color:#0b1220; color:#e2e8f0; }
+  html, body { overflow-x:hidden; }
+  .scroll-x { -webkit-overflow-scrolling:touch; scrollbar-width:thin; scrollbar-color:#2a3a5c transparent; }
   .modal-bg { background:rgba(2,6,23,.75); }
   tr.row:hover { background:#16223b; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -34,8 +36,8 @@
 <body class="text-slate-200 min-h-screen">
 
 <!-- Header ejecutivo -->
-<header class="border-b border-slate-800 bg-[#0d1527] sticky top-0 z-30">
-  <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center gap-4">
+<header class="border-b border-slate-800 bg-[#0d1527] md:sticky md:top-0 z-30">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-3">
     <div class="flex items-center gap-3">
       <div class="w-9 h-9 rounded-lg bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center text-cyan-300 font-bold">◈</div>
       <div>
@@ -43,13 +45,13 @@
         <p class="text-xs text-slate-400 leading-tight">Panel de Inteligencia de Amenazas</p>
       </div>
     </div>
-    <div class="ml-auto flex flex-wrap items-center gap-3">
-      <span id="dbStatus" class="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full border border-slate-700 text-slate-400">
+    <div class="w-full lg:w-auto lg:ml-auto flex flex-wrap items-center gap-2 sm:gap-3">
+      <span id="dbStatus" class="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full border border-slate-700 text-slate-400 whitespace-nowrap">
         <span class="w-2 h-2 rounded-full bg-slate-500"></span> Comprobando base…
       </span>
-      <a href="/api/docs-redirect" id="docsLink" target="_blank" class="text-xs text-cyan-300 hover:text-cyan-200 underline underline-offset-4">API Docs (Swagger)</a>
-      <button id="newBtn" class="border border-cyan-400/60 text-cyan-300 hover:bg-cyan-400/10 font-semibold text-sm px-4 py-2 rounded-lg transition">+ Clasificar Texto / Nueva Alerta</button>
-      <button id="syncBtn" class="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold text-sm px-4 py-2 rounded-lg transition disabled:opacity-60">
+      <a href="/api/docs-redirect" id="docsLink" target="_blank" class="text-xs text-cyan-300 hover:text-cyan-200 underline underline-offset-4 whitespace-nowrap">API Docs (Swagger)</a>
+      <button id="newBtn" class="flex-1 sm:flex-none min-w-[10rem] border border-cyan-400/60 text-cyan-300 hover:bg-cyan-400/10 font-semibold text-sm px-4 py-2 rounded-lg transition">+ Clasificar Texto / Nueva Alerta</button>
+      <button id="syncBtn" class="flex-1 sm:flex-none min-w-[10rem] justify-center flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold text-sm px-4 py-2 rounded-lg transition disabled:opacity-60">
         <svg id="syncSpin" class="w-4 h-4 hidden spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 3a9 9 0 1 0 9 9" stroke-linecap="round"/></svg>
         <span id="syncTxt">Sincronizar Fuentes Ahora</span>
       </button>
@@ -60,7 +62,7 @@
 <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
   <!-- KPIs -->
-  <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
     <div class="card p-4"><p class="text-xs uppercase tracking-wide text-slate-400">Total de Alertas Monitoreadas</p><p id="kTotal" class="kpi text-3xl font-bold text-white mt-1">—</p><p id="kLast" class="mono text-xs text-slate-400 mt-1">&nbsp;</p></div>
     <div class="card p-4 border-red-500/40"><p class="text-xs uppercase tracking-wide text-red-300">Amenazas Críticas</p><p id="kCrit" class="kpi text-3xl font-bold text-red-400 mt-1">—</p><p class="text-xs text-slate-400 mt-1">ransomware + phishing</p></div>
     <div class="card p-4 border-amber-500/40"><p class="text-xs uppercase tracking-wide text-amber-300">Pendientes de Triage</p><p id="kPend" class="kpi text-3xl font-bold text-amber-300 mt-1">—</p><p class="text-xs text-slate-400 mt-1">no_clasificado</p></div>
@@ -68,16 +70,16 @@
   </section>
 
   <!-- Gráficos -->
-  <section class="grid lg:grid-cols-2 gap-4">
-    <div class="card p-4">
+  <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="card p-4 min-w-0">
       <h2 class="text-sm font-semibold text-white">Distribución por Categoría de Amenaza</h2>
       <p class="text-xs text-slate-400 mb-2">Clic en un segmento para filtrar la bandeja</p>
-      <div class="h-72"><canvas id="chCat"></canvas></div>
+      <div class="relative w-full h-64 sm:h-72"><canvas id="chCat"></canvas></div>
     </div>
-    <div class="card p-4">
+    <div class="card p-4 min-w-0">
       <h2 class="text-sm font-semibold text-white">Sentimiento por Fuente (subreddit)</h2>
       <p class="text-xs text-slate-400 mb-2">Clic en una barra para filtrar por fuente</p>
-      <div class="h-72"><canvas id="chSub"></canvas></div>
+      <div class="relative w-full h-72 sm:h-80"><canvas id="chSub"></canvas></div>
     </div>
   </section>
 
@@ -88,18 +90,18 @@
         <h2 class="text-base font-semibold text-white">Bandeja de Triage y Gestión</h2>
         <span id="resCount" class="mono text-xs text-slate-400"></span>
       </div>
-      <div class="flex flex-wrap gap-2">
-        <input id="fQ" type="search" placeholder="Buscar en título y contenido…" class="flex-1 min-w-[220px] bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-400">
-        <select id="fCat" class="bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm"><option value="">Toda categoría</option></select>
-        <select id="fSent" class="bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm"><option value="">Todo sentimiento</option></select>
-        <select id="fSub" class="bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm"><option value="">Todo subreddit</option></select>
-        <button id="fPend" class="border border-amber-400/60 text-amber-300 hover:bg-amber-400/10 text-sm px-3 py-2 rounded-lg">Ver solo pendientes (no_clasificado)</button>
-        <button id="fClear" class="text-slate-400 hover:text-white text-sm px-2">Limpiar</button>
-        <button id="fExport" class="border border-emerald-400/60 text-emerald-300 hover:bg-emerald-400/10 text-sm px-3 py-2 rounded-lg">⬇ Exportar CSV</button>
+      <div class="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:flex-wrap gap-2">
+        <input id="fQ" type="search" placeholder="Buscar en título y contenido…" class="w-full sm:col-span-3 lg:flex-1 lg:min-w-[220px] bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-400">
+        <select id="fCat" class="w-full lg:w-auto bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm"><option value="">Toda categoría</option></select>
+        <select id="fSent" class="w-full lg:w-auto bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm"><option value="">Todo sentimiento</option></select>
+        <select id="fSub" class="w-full lg:w-auto bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm"><option value="">Todo subreddit</option></select>
+        <button id="fPend" class="sm:col-span-3 lg:col-auto border border-amber-400/60 text-amber-300 hover:bg-amber-400/10 text-sm px-3 py-2 rounded-lg">Ver solo pendientes (no_clasificado)</button>
+        <button id="fClear" class="text-slate-400 hover:text-white text-sm px-2 py-2 border border-slate-800 rounded-lg lg:border-0">Limpiar</button>
+        <button id="fExport" class="sm:col-span-2 lg:col-auto border border-emerald-400/60 text-emerald-300 hover:bg-emerald-400/10 text-sm px-3 py-2 rounded-lg">⬇ Exportar CSV</button>
       </div>
     </div>
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm">
+    <div class="overflow-x-auto scroll-x">
+      <table class="w-full min-w-[900px] text-sm">
         <thead class="text-xs uppercase text-slate-400 bg-[#0d1527]">
           <tr>
             <th class="text-left px-3 py-2 cursor-pointer select-none" id="thDate">Fecha ▾</th>
@@ -113,7 +115,7 @@
         <tbody id="rows"></tbody>
       </table>
     </div>
-    <div class="p-3 flex items-center justify-between border-t border-slate-800 text-xs text-slate-400">
+    <div class="p-3 flex flex-wrap gap-2 items-center justify-between border-t border-slate-800 text-xs text-slate-400">
       <span id="pageInfo" class="mono"></span>
       <div class="flex gap-2">
         <button id="prev" class="px-3 py-1.5 rounded border border-slate-700 hover:bg-slate-800 disabled:opacity-40">← Anterior</button>
@@ -126,16 +128,16 @@
 
 <!-- Modal detalle -->
 <div id="modal" class="hidden fixed inset-0 z-40 modal-bg flex items-center justify-center p-4">
-  <div class="card max-w-2xl w-full max-h-[85vh] overflow-y-auto p-5">
+  <div class="card mx-auto max-w-2xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-5">
     <div class="flex justify-between items-start gap-4">
-      <h3 id="mTitle" class="text-lg font-semibold text-white"></h3>
+      <h3 id="mTitle" class="text-lg font-semibold text-white break-words min-w-0"></h3>
       <button id="mClose" class="text-slate-400 hover:text-white text-xl leading-none">×</button>
     </div>
     <div id="mMeta" class="flex flex-wrap gap-2 mt-3 text-xs"></div>
     <p id="mBody" class="mt-4 text-sm text-slate-300 whitespace-pre-wrap break-words"></p>
-    <div class="mt-5 flex justify-between items-center text-xs text-slate-400">
+    <div class="mt-5 flex flex-wrap gap-3 justify-between items-center text-xs text-slate-400">
       <span id="mId" class="mono"></span>
-      <div class="flex gap-2 items-center">
+      <div class="flex flex-wrap gap-2 items-center">
         <button id="mTr" type="button" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 px-3 py-2 rounded-lg text-sm disabled:opacity-60">🌐 Traducir al español</button>
         <a id="mLink" target="_blank" rel="noopener noreferrer" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 px-3 py-2 rounded-lg text-sm">Abrir post original en Reddit ↗</a>
       </div>
@@ -145,7 +147,7 @@
 
 <!-- Modal nueva alerta / clasificación manual -->
 <div id="nModal" class="hidden fixed inset-0 z-40 modal-bg flex items-center justify-center p-4">
-  <form id="nForm" class="card max-w-xl w-full max-h-[90vh] overflow-y-auto p-5 space-y-4">
+  <form id="nForm" class="card mx-auto max-w-xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-5 space-y-4">
     <div class="flex justify-between items-start gap-4">
       <div>
         <h3 class="text-lg font-semibold text-white">Clasificar Texto / Nueva Alerta</h3>
@@ -179,8 +181,14 @@ const SENTS = ["positivo","neutral","negativo"];
 const CAT_COLOR = {ransomware:"#ef4444",phishing:"#f97316",malware:"#a855f7",vulnerabilidad:"#eab308",otro:"#38bdf8",no_clasificado:"#64748b"};
 const SENT_COLOR = {positivo:"#22c55e",neutral:"#64748b",negativo:"#ef4444"};
 const state = {page:1, size:25, sort:"created_utc", order:"desc", category:"", sentiment:"", subreddit:"", q:""};
+Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+Chart.defaults.color = "#cbd5e1";
+const TOOLTIP = {padding: 12, backgroundColor: "#0b1220", borderColor: "#2a3a5c", borderWidth: 1, titleColor: "#f1f5f9", bodyColor: "#cbd5e1",
+  titleFont: {size: 13, weight: "600"}, bodyFont: {size: 12.5}, cornerRadius: 8, boxPadding: 4};
+const LEGEND = pos => ({position: pos, labels: {color: "#cbd5e1", font: {size: 13, weight: "500"}, padding: 14, usePointStyle: true, boxWidth: 8}});
 let chCat, chSub, total = 0;
 
+const cleanSub = s => String(s ?? "").trim().replace(/^(?:\/?r\/)+/i, "");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt = n => Number(n).toLocaleString("es-AR");
 const fdate = d => d ? new Date(d + (/[zZ]|[+-]\d\d:?\d\d$/.test(d) ? "" : "Z")).toLocaleString("es-AR", {dateStyle:"short", timeStyle:"short"}) : "—";
@@ -225,7 +233,8 @@ async function loadStats() {
     type: "doughnut",
     data: {labels: cats, datasets: [{data: cats.map(k => c[k]), backgroundColor: cats.map(k => CAT_COLOR[k]), borderColor: "#111a2e", borderWidth: 2}]},
     options: {maintainAspectRatio: false, cutout: "58%",
-      plugins: {legend: {position: "right", labels: {color: "#cbd5e1"}}},
+      plugins: {legend: LEGEND(innerWidth < 480 ? "bottom" : "right"), tooltip: TOOLTIP},
+      onResize: (ch, size) => { const pos = size.width < 420 ? "bottom" : "right"; if (ch.options.plugins.legend.position !== pos) { ch.options.plugins.legend.position = pos; ch.update("none"); } },
       onClick: (_, els) => { if (els.length) { setFilter("category", cats[els[0].index]); } },
       onHover: (e, els) => e.native.target.style.cursor = els.length ? "pointer" : "default"}
   });
@@ -236,8 +245,8 @@ async function loadStats() {
     type: "bar",
     data: {labels: subs, datasets: SENTS.map(k => ({label: k, backgroundColor: SENT_COLOR[k], data: subs.map(x => byS[x]?.[k] || 0)}))},
     options: {indexAxis: "y", maintainAspectRatio: false,
-      scales: {x: {stacked: true, ticks: {color: "#94a3b8"}, grid: {color: "#1f2b45"}}, y: {stacked: true, ticks: {color: "#cbd5e1"}, grid: {display: false}}},
-      plugins: {legend: {labels: {color: "#cbd5e1"}}},
+      scales: {x: {stacked: true, ticks: {color: "#94a3b8", font: {size: 12.5}}, grid: {color: "#1f2b45"}}, y: {stacked: true, ticks: {color: "#cbd5e1", font: {size: 12.5}}, grid: {display: false}}},
+      plugins: {legend: LEGEND("top"), tooltip: TOOLTIP},
       onClick: (_, els) => { if (els.length) setFilter("subreddit", subs[els[0].index]); },
       onHover: (e, els) => e.native.target.style.cursor = els.length ? "pointer" : "default"}
   });
@@ -261,8 +270,8 @@ async function loadPosts() {
   document.getElementById("rows").innerHTML = d.items.length ? d.items.map(r => `
     <tr class="row border-t border-slate-800/70" data-id="${esc(r.post_id)}">
       <td class="mono px-3 py-2 whitespace-nowrap text-slate-400">${fdate(r.created_utc)}</td>
-      <td class="mono px-3 py-2 whitespace-nowrap text-cyan-300">r/${esc(r.subreddit)}</td>
-      <td class="px-3 py-2 max-w-md"><span class="line-clamp-2">${esc(r.title)}</span></td>
+      <td class="mono px-3 py-2 whitespace-nowrap text-cyan-300">r/${esc(cleanSub(r.subreddit))}</td>
+      <td class="px-3 py-2 min-w-[240px] max-w-md"><span class="line-clamp-2 break-words">${esc(r.title)}</span></td>
       <td class="px-3 py-2">${pill("threat_category", r.threat_category, CATS, CAT_COLOR)}</td>
       <td class="px-3 py-2">${pill("sentiment", r.sentiment, SENTS, SENT_COLOR)}</td>
       <td class="px-3 py-2 text-right whitespace-nowrap">
@@ -298,7 +307,7 @@ document.getElementById("rows").addEventListener("click", async e => {
     mPost = r; showOriginal();
     mTitle.textContent = r.title;
     mMeta.innerHTML = badge(r.threat_category, CAT_COLOR) + badge(r.sentiment, SENT_COLOR) +
-      `<span class="px-2 py-0.5 rounded-full border border-slate-700 text-slate-300">r/${esc(r.subreddit)}</span>` +
+      `<span class="px-2 py-0.5 rounded-full border border-slate-700 text-slate-300">r/${esc(cleanSub(r.subreddit))}</span>` +
       `<span class="px-2 py-0.5 rounded-full border border-slate-700 text-slate-300">${fdate(r.created_utc)}</span>` +
       `<span class="px-2 py-0.5 rounded-full border border-slate-700 text-slate-300">score ${r.score ?? 0} · ${r.num_comments ?? 0} comentarios</span>` +
       `<span class="px-2 py-0.5 rounded-full border border-slate-700 text-slate-300">VADER ${(r.compound ?? 0).toFixed(3)}</span>`;
@@ -382,7 +391,7 @@ nModal.onclick = e => { if (e.target === nModal) closeN(); };
 nForm.onsubmit = async e => {
   e.preventDefault(); nSave.disabled = true;
   try {
-    const body = {title: nTitle.value.trim(), content: nText.value.trim(), source: nSource.value.trim() || "manual"};
+    const body = {title: nTitle.value.trim(), content: nText.value.trim(), source: cleanSub(nSource.value) || "manual"};
     if (nUrl.value.trim()) body.url = nUrl.value.trim();
     const r = await api("/api/posts", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
     nResult.innerHTML = `<p class="font-semibold text-white mb-2">Resultado del clasificador</p><div class="flex flex-wrap gap-2 items-center">${badge(r.threat_category, CAT_COLOR)}${badge(r.sentiment, SENT_COLOR)}<span class="mono muted">VADER compound ${r.compound.toFixed(3)}</span><span class="mono muted">${esc(r.post_id)}</span></div>`;
