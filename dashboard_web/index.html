@@ -20,7 +20,11 @@
   input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible { outline:2px solid #22d3ee; outline-offset:2px; }
   .line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .card { background:#111a2e; border:1px solid #1f2b45; border-radius:.75rem; }
-  select.inline { background:#0b1220; border:1px solid #2a3a5c; border-radius:.375rem; padding:.2rem .35rem; font-size:.75rem; color:#e2e8f0; }
+  select.pill { appearance:none; -webkit-appearance:none; border:1px solid; border-radius:9999px; padding:.2rem 1.5rem .2rem .7rem; font-weight:500; cursor:pointer; line-height:1.4;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23cbd5e1' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right .55rem center; color-scheme:dark; }
+  select.pill:disabled { opacity:.6; cursor:wait; }
+  select.pill option { background-color:#0b1220; color:#e2e8f0; }
   .modal-bg { background:rgba(2,6,23,.75); }
   tr.row:hover { background:#16223b; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -196,6 +200,9 @@ function toast(msg, ok = true) {
 }
 
 const badge = (v, colors) => `<span class="mono inline-block px-2 py-0.5 rounded-full font-medium" style="background:${colors[v] || "#334155"}22;color:${colors[v] || "#94a3b8"};border:1px solid ${colors[v] || "#334155"}66">${esc(v)}</span>`;
+const pillStyle = (v, colors) => { const c = colors[v] || "#64748b"; return `background-color:${c}22;color:${c};border-color:${c}66`; };
+const paintPill = (sel, colors) => sel.setAttribute("style", pillStyle(sel.value, colors));
+const pill = (field, v, list, colors) => `<select class="pill mono" data-f="${field}" style="${pillStyle(v, colors)}" aria-label="${field}">${options(list, v)}</select>`;
 const options = (list, sel) => list.map(v => `<option value="${v}" ${v === sel ? "selected" : ""}>${v}</option>`).join("");
 
 /* ---------- Estadísticas y gráficos ---------- */
@@ -256,8 +263,8 @@ async function loadPosts() {
       <td class="mono px-3 py-2 whitespace-nowrap text-slate-400">${fdate(r.created_utc)}</td>
       <td class="mono px-3 py-2 whitespace-nowrap text-cyan-300">r/${esc(r.subreddit)}</td>
       <td class="px-3 py-2 max-w-md"><span class="line-clamp-2">${esc(r.title)}</span></td>
-      <td class="px-3 py-2">${badge(r.threat_category, CAT_COLOR)}<br><select class="inline mt-1" data-f="threat_category">${options(CATS, r.threat_category)}</select></td>
-      <td class="px-3 py-2">${badge(r.sentiment, SENT_COLOR)}<br><select class="inline mt-1" data-f="sentiment">${options(SENTS, r.sentiment)}</select></td>
+      <td class="px-3 py-2">${pill("threat_category", r.threat_category, CATS, CAT_COLOR)}</td>
+      <td class="px-3 py-2">${pill("sentiment", r.sentiment, SENTS, SENT_COLOR)}</td>
       <td class="px-3 py-2 text-right whitespace-nowrap">
         <button data-act="view" class="text-cyan-300 hover:underline mr-3">Ver detalle</button>
         <button data-act="del" class="text-red-400 hover:underline">Descartar</button>
@@ -269,12 +276,19 @@ let rowsData = {};
 
 document.getElementById("rows").addEventListener("change", async e => {
   const f = e.target.dataset.f; if (!f) return;
-  const id = e.target.closest("tr").dataset.id;
+  const sel = e.target, id = sel.closest("tr").dataset.id, colors = f === "threat_category" ? CAT_COLOR : SENT_COLOR;
+  const prevVal = rowsData[id]?.[f];
+  paintPill(sel, colors);                       // color al instante, sin recargar la tabla
+  sel.disabled = true;
   try {
-    await api("/api/posts/" + encodeURIComponent(id), {method: "PATCH", headers: {"Content-Type": "application/json"}, body: JSON.stringify({[f]: e.target.value})});
-    toast(`Reclasificado: ${f === "threat_category" ? "categoría" : "sentimiento"} → ${e.target.value}`);
-    await Promise.all([loadPosts(), loadStats()]);
-  } catch (err) { toast("No se pudo guardar: " + err.message, false); loadPosts(); }
+    await api("/api/posts/" + encodeURIComponent(id), {method: "PATCH", headers: {"Content-Type": "application/json"}, body: JSON.stringify({[f]: sel.value})});
+    if (rowsData[id]) rowsData[id][f] = sel.value;
+    toast(`Reclasificado: ${f === "threat_category" ? "categoría" : "sentimiento"} → ${sel.value}`);
+    loadStats().catch(() => {});                // KPIs y gráficos
+  } catch (err) {
+    if (prevVal) { sel.value = prevVal; paintPill(sel, colors); }
+    toast("No se pudo guardar: " + err.message, false);
+  } finally { sel.disabled = false; }
 });
 
 document.getElementById("rows").addEventListener("click", async e => {
