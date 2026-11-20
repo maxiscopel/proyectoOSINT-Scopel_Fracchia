@@ -4,6 +4,72 @@ Sistema automatizado de monitoreo OSINT aplicado a la ciberseguridad. Recolecta 
 Reddit, las clasifica por categoria de amenaza y analiza sentimiento. Desarrollado como parte de una
 tesis de grado (Scopel & Fracchia, 2026); el ground truth y su evaluacion estan incluidos.
 
+## Dashboard Interactivo Comercial (API REST + Frontend Web)
+
+> **Rama `feature/dashboard-api`.** La tesis entregada y auditada (`TESIS_FINAL_v56`) corresponde a `main`
+> y a la etiqueta **`v1.0-tesis-entregada`** (commit `9278aed`), que permanecen congeladas. Esta rama agrega,
+> sin modificar el pipeline, el esquema ni el ground truth, una capa de producto sobre la misma base `posts`.
+
+### Que incorpora esta extension
+
+- **Backend API REST** en **FastAPI** (`dashboard_api/`), conectado a `osint-postgres` con las variables del `.env`
+  y al webhook de `maxi-n8n` (workflow `osint_sync_webhook`). Documentacion interactiva en Swagger UI.
+- **Frontend web responsive** (`dashboard_web/`) en HTML + **Tailwind CSS** + **Chart.js**, sin build: tipografia
+  Inter / JetBrains Mono, adaptado a movil, tablet y escritorio. Nginx lo sirve y reenvia `/api` al backend.
+- Dos servicios nuevos en `docker-compose.yml`: `osint-api` (puerto 8000) y `osint-web` (puerto 8080), en `osint-net`.
+
+### Accesos directos (URLs locales)
+
+| Servicio | URL |
+|---|---|
+| **Panel Web Comercial (OSINT CyberWatch)** | **http://localhost:8080** |
+| **Documentacion interactiva de la API (Swagger UI)** | **http://localhost:8000/docs** |
+| **Orquestador n8n** | **http://localhost:5678** |
+
+Los puertos se publican solo en `127.0.0.1`.
+
+### Como levantarlo paso a paso
+
+1. Instalar Docker y Docker Compose y clonar la rama:
+   ```bash
+   git clone -b feature/dashboard-api https://github.com/maxiscopel/proyectoOSINT-Scopel_Fracchia.git
+   cd proyectoOSINT-Scopel_Fracchia
+   ```
+2. Crear el `.env` a partir de `.env.example` (`POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `AUTHOR_SALT`).
+   No se versiona.
+3. Construir y levantar todo el stack (el proyecto Compose se llama `ttesis`):
+   ```bash
+   docker compose -p ttesis up -d --build
+   ```
+4. Cargar el esquema si la base esta vacia (`schema.sql`) y abrir http://localhost:8080.
+5. *(Opcional, para que «Sincronizar» use n8n)* importar y activar el workflow del webhook y reiniciar n8n:
+   ```bash
+   docker exec -i maxi-n8n sh -c 'cat > /tmp/wf.json' < dashboard_api/n8n_workflow_osint_sync_webhook.json
+   docker exec maxi-n8n n8n import:workflow --input=/tmp/wf.json
+   docker exec maxi-n8n n8n publish:workflow --id=osintSyncWebhook01
+   docker restart maxi-n8n
+   ```
+   El workflow usa la credencial Postgres de n8n llamada `Postgres account`; si la tuya tiene otro id, ajustalo
+   en el nodo «Upsert posts». Sin este paso el boton igual funciona (la API ejecuta el pipeline localmente).
+
+### Funcionalidades del panel
+
+- **KPIs en vivo:** total de alertas, amenazas criticas (ransomware + phishing), pendientes de triage y vulnerabilidades.
+- **Graficos interactivos (Chart.js):** distribucion por categoria de amenaza y sentimiento por fuente; un clic filtra la bandeja.
+- **Bandeja de triage:** busqueda en tiempo real, filtros combinables, orden por fecha, paginacion y **reclasificacion
+  inline** de categoria y sentimiento con una unica pildora desplegable coloreada (guarda via `PATCH`).
+- **Detalle y descarte:** modal con el contenido completo y enlace al post original; descarte de ruido (`DELETE`).
+- **Traduccion al espanol** del titulo y el contenido: Google Translate con respaldo automatico a MyMemory y cache en memoria.
+- **Exportar CSV** de los registros que cumplen los filtros activos.
+- **Alta / clasificacion manual:** un texto pegado pasa por el clasificador real (`classify_threat`) y VADER del
+  pipeline, se guarda en PostgreSQL y actualiza KPIs y graficos al instante.
+- **Sincronizar Fuentes Ahora:** dispara el webhook de n8n; si no responde, corre `osint_pipeline.py`; y si Reddit
+  rechaza con HTTP 429, procesa un feed local de muestra (`dashboard_api/sample_feed.xml`) para no mostrar un error.
+  Ese respaldo **no trae datos nuevos**: solo re-procesa 4 publicaciones reales ya presentes en la base.
+
+> Aviso: el panel opera sobre la base real; `PATCH` y `DELETE` modifican datos y el descarte es definitivo.
+> Detalle de los endpoints y del flujo de sincronizacion en [`dashboard_web/README.md`](dashboard_web/README.md).
+
 ## Arquitectura
 
 ```
@@ -71,12 +137,14 @@ http://localhost:5678
 ├── osint_classify.py                  # Clasificador + VADER (el que ejecuta n8n)
 ├── scripts/                           # osint_pipeline/fetch/classify.py (copia montada en /data/scripts, la que corre el contenedor) y limpiar_pie_usuario.sql (saneamiento puntual de `posts`)
 ├── Dockerfile                         # Imagen Docker con n8n + Python 3.12 (build-standalone musl)
-├── docker-compose.yml                 # PostgreSQL + n8n + Metabase (restart: unless-stopped)
+├── docker-compose.yml                 # PostgreSQL + n8n + Metabase + osint-api + osint-web (restart: unless-stopped)
 ├── workflow_osint_monitoreo_rss.json  # Workflow n8n activo (exportado de la DB que ejecuta)
 ├── schema.sql                         # DDL de la base de datos (esquema definitivo)
 ├── dashboard_queries.sql              # Consultas del dashboard (Metabase)
 ├── requirements.txt                   # Dependencias Python (versiones exactas)
 ├── requirements-freeze.txt            # pip freeze completo del contenedor que ejecuto
+├── dashboard_api/                     # (rama feature/dashboard-api) API REST FastAPI, feed de muestra y workflow n8n del webhook de sync
+├── dashboard_web/                     # (rama feature/dashboard-api) frontend Tailwind + Chart.js y su README
 ├── evidencia/                         # Logs de n8n, script forense, corpus de 860 con texto y desglose de upserts (ver evidencia/README.md)
 ├── ground_truth/                      # Ground truth, tanda 2 ponderada y evidencia de la ventana continua (ver abajo)
 └── README.md                          # Este archivo

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OSINT CyberWatch — Panel de Inteligencia de Amenazas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = {theme: {extend: {fontFamily: {sans: ["Inter", "system-ui", "sans-serif"], mono: ["JetBrains Mono", "ui-monospace", "monospace"]}}}}</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  body { background:#0b1220; font-family:"Inter",system-ui,sans-serif; line-height:1.55; -webkit-font-smoothing:antialiased; font-feature-settings:"cv11","ss01"; }
+  h1,h2,h3 { letter-spacing:-.015em; }
+  .mono { font-family:"JetBrains Mono",ui-monospace,monospace; font-size:.78em; }
+  .kpi { font-variant-numeric:tabular-nums; letter-spacing:-.03em; line-height:1.1; }
+  .muted { color:#94a3b8; }
+  input, select, button { font-family:inherit; }
+  input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible { outline:2px solid #22d3ee; outline-offset:2px; }
+  .line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .card { background:#111a2e; border:1px solid #1f2b45; border-radius:.75rem; }
+  select.pill { appearance:none; -webkit-appearance:none; border:1px solid; border-radius:9999px; padding:.2rem 1.5rem .2rem .7rem; font-weight:500; cursor:pointer; line-height:1.4;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23cbd5e1' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right .55rem center; color-scheme:dark; }
+  select.pill:disabled { opacity:.6; cursor:wait; }
+  select.pill option { background-color:#0b1220; color:#e2e8f0; }
+  html, body { overflow-x:hidden; }
+  .scroll-x { -webkit-overflow-scrolling:touch; scrollbar-width:thin; scrollbar-color:#2a3a5c transparent; }
+  .modal-bg { background:rgba(2,6,23,.75); }
+  tr.row:hover { background:#16223b; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin { animation: spin .8s linear infinite; }
+</style>
+</head>
+<body class="text-slate-200 min-h-screen">
+
+<!-- Header ejecutivo -->
+<header class="border-b border-slate-800 bg-[#0d1527] md:sticky md:top-0 z-30">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-3">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center text-cyan-300 font-bold">◈</div>
+      <div>
+        <h1 class="text-lg font-semibold leading-tight text-white">OSINT CyberWatch</h1>
+        <p class="text-xs text-slate-400 leading-tight">Panel de Inteligencia de Amenazas</p>
+      </div>
+    </div>
+    <div class="w-full lg:w-auto lg:ml-auto flex flex-wrap items-center gap-2 sm:gap-3">
+      <span id="dbStatus" class="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full border border-slate-700 text-slate-400 whitespace-nowrap">
+        <span class="w-2 h-2 rounded-full bg-slate-500"></span> Comprobando base…
+      </span>
+      <a href="/api/docs-redirect" id="docsLink" target="_blank" class="text-xs text-cyan-300 hover:text-cyan-200 underline underline-offset-4 whitespace-nowrap">API Docs (Swagger)</a>
+      <button id="newBtn" class="flex-1 sm:flex-none min-w-[10rem] border border-cyan-400/60 text-cyan-300 hover:bg-cyan-400/10 font-semibold text-sm px-4 py-2 rounded-lg transition">+ Clasificar Texto / Nueva Alerta</button>
+      <button id="syncBtn" class="flex-1 sm:flex-none min-w-[10rem] justify-center flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold text-sm px-4 py-2 rounded-lg transition disabled:opacity-60">
+        <svg id="syncSpin" class="w-4 h-4 hidden spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 3a9 9 0 1 0 9 9" stroke-linecap="round"/></svg>
+        <span id="syncTxt">Sincronizar Fuentes Ahora</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+  <!-- KPIs -->
+  <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="card p-4"><p class="text-xs uppercase tracking-wide text-slate-400">Total de Alertas Monitoreadas</p><p id="kTotal" class="kpi text-3xl font-bold text-white mt-1">—</p><p id="kLast" class="mono text-xs text-slate-400 mt-1">&nbsp;</p></div>
+    <div class="card p-4 border-red-500/40"><p class="text-xs uppercase tracking-wide text-red-300">Amenazas Críticas</p><p id="kCrit" class="kpi text-3xl font-bold text-red-400 mt-1">—</p><p class="text-xs text-slate-400 mt-1">ransomware + phishing</p></div>
+    <div class="card p-4 border-amber-500/40"><p class="text-xs uppercase tracking-wide text-amber-300">Pendientes de Triage</p><p id="kPend" class="kpi text-3xl font-bold text-amber-300 mt-1">—</p><p class="text-xs text-slate-400 mt-1">no_clasificado</p></div>
+    <div class="card p-4 border-orange-500/40"><p class="text-xs uppercase tracking-wide text-orange-300">Vulnerabilidades Detectadas</p><p id="kVuln" class="kpi text-3xl font-bold text-orange-400 mt-1">—</p><p class="text-xs text-slate-400 mt-1">vulnerabilidad</p></div>
+  </section>
+
+  <!-- Gráficos -->
+  <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="card p-4 min-w-0">
+      <h2 class="text-sm font-semibold text-white">Distribución por Categoría de Amenaza</h2>
+      <p class="text-xs text-slate-400 mb-2">Clic en un segmento para filtrar la bandeja</p>
+      <div class="relative w-full h-64 sm:h-72"><canvas id="chCat"></canvas></div>
+    </div>
+    <div class="card p-4 min-w-0">
+      <h2 class="text-sm font-semibold text-white">Sentimiento por Fuente (subreddit)</h2>
+      <p class="text-xs text-slate-400 mb-2">Clic en una barra para filtrar por fuente</p>
+      <div class="relative w-full h-72 sm:h-80"><canvas id="chSub"></canvas></div>
+    </div>
+  </section>
+
+  <!-- Bandeja de triage -->
+  <section class="card">
+    <div class="p-4 border-b border-slate-800 space-y-3">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <h2 class="text-base font-semibold text-white">Bandeja de Triage y Gestión</h2>
+        <span id="resCount" class="mono text-xs text-slate-400"></span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:flex-wrap gap-2">
+        <input id="fQ" type="search" placeholder="Buscar en título y contenido…" class="w-full sm:col-span-3 lg:flex-1 lg:min-w-[220px] bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-400">
+        <select id="fCat" class="w-full lg:w-auto bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm"><option value="">Toda categoría</option></select>
+        <select id="fSent" class="w-full lg:w-auto bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm"><option value="">Todo sentimiento</option></select>
+        <select id="fSub" class="w-full lg:w-auto bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm"><option value="">Todo subreddit</option></select>
+        <button id="fPend" class="sm:col-span-3 lg:col-auto border border-amber-400/60 text-amber-300 hover:bg-amber-400/10 text-sm px-3 py-2 rounded-lg">Ver solo pendientes (no_clasificado)</button>
+        <button id="fClear" class="text-slate-400 hover:text-white text-sm px-2 py-2 border border-slate-800 rounded-lg lg:border-0">Limpiar</button>
+        <button id="fExport" class="sm:col-span-2 lg:col-auto border border-emerald-400/60 text-emerald-300 hover:bg-emerald-400/10 text-sm px-3 py-2 rounded-lg">⬇ Exportar CSV</button>
+      </div>
+    </div>
+    <div class="overflow-x-auto scroll-x">
+      <table class="w-full min-w-[900px] text-sm">
+        <thead class="text-xs uppercase text-slate-400 bg-[#0d1527]">
+          <tr>
+            <th class="text-left px-3 py-2 cursor-pointer select-none" id="thDate">Fecha ▾</th>
+            <th class="text-left px-3 py-2">Subreddit</th>
+            <th class="text-left px-3 py-2">Título</th>
+            <th class="text-left px-3 py-2">Categoría</th>
+            <th class="text-left px-3 py-2">Sentimiento</th>
+            <th class="text-right px-3 py-2">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="p-3 flex flex-wrap gap-2 items-center justify-between border-t border-slate-800 text-xs text-slate-400">
+      <span id="pageInfo" class="mono"></span>
+      <div class="flex gap-2">
+        <button id="prev" class="px-3 py-1.5 rounded border border-slate-700 hover:bg-slate-800 disabled:opacity-40">← Anterior</button>
+        <button id="next" class="px-3 py-1.5 rounded border border-slate-700 hover:bg-slate-800 disabled:opacity-40">Siguiente →</button>
+      </div>
+    </div>
+  </section>
+  <footer class="text-center text-xs text-slate-500 pb-6">OSINT CyberWatch · Reddit RSS → n8n → Python → PostgreSQL · Tesis UTN FRM, Scopel &amp; Fracchia</footer>
+</main>
+
+<!-- Modal detalle -->
+<div id="modal" class="hidden fixed inset-0 z-40 modal-bg flex items-center justify-center p-4">
+  <div class="card mx-auto max-w-2xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-5">
+    <div class="flex justify-between items-start gap-4">
+      <h3 id="mTitle" class="text-lg font-semibold text-white break-words min-w-0"></h3>
+      <button id="mClose" class="text-slate-400 hover:text-white text-xl leading-none">×</button>
+    </div>
+    <div id="mMeta" class="flex flex-wrap gap-2 mt-3 text-xs"></div>
+    <p id="mBody" class="mt-4 text-sm text-slate-300 whitespace-pre-wrap break-words"></p>
+    <div class="mt-5 flex flex-wrap gap-3 justify-between items-center text-xs text-slate-400">
+      <span id="mId" class="mono"></span>
+      <div class="flex flex-wrap gap-2 items-center">
+        <button id="mTr" type="button" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 px-3 py-2 rounded-lg text-sm disabled:opacity-60">🌐 Traducir al español</button>
+        <a id="mLink" target="_blank" rel="noopener noreferrer" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 px-3 py-2 rounded-lg text-sm">Abrir post original en Reddit ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal nueva alerta / clasificación manual -->
+<div id="nModal" class="hidden fixed inset-0 z-40 modal-bg flex items-center justify-center p-4">
+  <form id="nForm" class="card mx-auto max-w-xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-5 space-y-4">
+    <div class="flex justify-between items-start gap-4">
+      <div>
+        <h3 class="text-lg font-semibold text-white">Clasificar Texto / Nueva Alerta</h3>
+        <p class="text-xs text-slate-400">El texto pasa por el clasificador por palabras clave y VADER del pipeline, y se guarda en PostgreSQL.</p>
+      </div>
+      <button type="button" id="nClose" class="text-slate-400 hover:text-white text-xl leading-none">×</button>
+    </div>
+    <label class="block text-sm"><span class="text-slate-300">Título *</span>
+      <input id="nTitle" required minlength="3" maxlength="500" class="mt-1 w-full bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-400" placeholder="Ej.: New LockBit ransomware variant targets hospitals"></label>
+    <label class="block text-sm"><span class="text-slate-300">Texto</span>
+      <textarea id="nText" rows="6" maxlength="10000" class="mt-1 w-full bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-400" placeholder="Pegá aquí el contenido de la publicación o del reporte…"></textarea></label>
+    <div class="grid sm:grid-cols-2 gap-3">
+      <label class="block text-sm"><span class="text-slate-300">Fuente</span>
+        <input id="nSource" maxlength="100" value="manual" class="mono mt-1 w-full bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 focus:outline-none focus:border-cyan-400"></label>
+      <label class="block text-sm"><span class="text-slate-300">URL (opcional)</span>
+        <input id="nUrl" type="url" class="mono mt-1 w-full bg-[#0b1220] border border-slate-700 rounded-lg px-3 py-2 focus:outline-none focus:border-cyan-400" placeholder="https://…"></label>
+    </div>
+    <div id="nResult" class="hidden rounded-lg border border-cyan-500/40 bg-cyan-500/5 p-3 text-sm"></div>
+    <div class="flex justify-end gap-2">
+      <button type="button" id="nCancel" class="px-4 py-2 text-sm text-slate-300 hover:text-white">Cerrar</button>
+      <button id="nSave" class="bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold text-sm px-4 py-2 rounded-lg disabled:opacity-60">Clasificar y guardar</button>
+    </div>
+  </form>
+</div>
+
+<div id="toasts"class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+<script>
+const CATS = ["no_clasificado","vulnerabilidad","malware","phishing","ransomware","otro"];
+const SENTS = ["positivo","neutral","negativo"];
+const CAT_COLOR = {ransomware:"#ef4444",phishing:"#f97316",malware:"#a855f7",vulnerabilidad:"#eab308",otro:"#38bdf8",no_clasificado:"#64748b"};
+const SENT_COLOR = {positivo:"#22c55e",neutral:"#64748b",negativo:"#ef4444"};
+const state = {page:1, size:25, sort:"created_utc", order:"desc", category:"", sentiment:"", subreddit:"", q:""};
+Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+Chart.defaults.color = "#cbd5e1";
+const TOOLTIP = {padding: 12, backgroundColor: "#0b1220", borderColor: "#2a3a5c", borderWidth: 1, titleColor: "#f1f5f9", bodyColor: "#cbd5e1",
+  titleFont: {size: 13, weight: "600"}, bodyFont: {size: 12.5}, cornerRadius: 8, boxPadding: 4};
+const LEGEND = pos => ({position: pos, labels: {color: "#cbd5e1", font: {size: 13, weight: "500"}, padding: 14, usePointStyle: true, boxWidth: 8}});
+let chCat, chSub, total = 0;
+
+const cleanSub = s => String(s ?? "").trim().replace(/^(?:\/?r\/)+/i, "");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = n => Number(n).toLocaleString("es-AR");
+const fdate = d => d ? new Date(d + (/[zZ]|[+-]\d\d:?\d\d$/.test(d) ? "" : "Z")).toLocaleString("es-AR", {dateStyle:"short", timeStyle:"short"}) : "—";
+
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || ("HTTP " + r.status));
+  return r.json();
+}
+
+function toast(msg, ok = true) {
+  const el = document.createElement("div");
+  el.className = "px-4 py-3 rounded-lg shadow-lg text-sm border " + (ok ? "bg-emerald-900/90 border-emerald-500/50 text-emerald-100" : "bg-red-900/90 border-red-500/50 text-red-100");
+  el.textContent = msg;
+  document.getElementById("toasts").appendChild(el);
+  setTimeout(() => el.remove(), 5000);
+}
+
+const badge = (v, colors) => `<span class="mono inline-block px-2 py-0.5 rounded-full font-medium" style="background:${colors[v] || "#334155"}22;color:${colors[v] || "#94a3b8"};border:1px solid ${colors[v] || "#334155"}66">${esc(v)}</span>`;
+const pillStyle = (v, colors) => { const c = colors[v] || "#64748b"; return `background-color:${c}22;color:${c};border-color:${c}66`; };
+const paintPill = (sel, colors) => sel.setAttribute("style", pillStyle(sel.value, colors));
+const pill = (field, v, list, colors) => `<select class="pill mono" data-f="${field}" style="${pillStyle(v, colors)}" aria-label="${field}">${options(list, v)}</select>`;
+const options = (list, sel) => list.map(v => `<option value="${v}" ${v === sel ? "selected" : ""}>${v}</option>`).join("");
+
+/* ---------- Estadísticas y gráficos ---------- */
+async function loadStats() {
+  const s = await api("/api/stats");
+  const c = s.by_category;
+  document.getElementById("kTotal").textContent = fmt(s.total_posts);
+  document.getElementById("kCrit").textContent = fmt((c.ransomware || 0) + (c.phishing || 0));
+  document.getElementById("kPend").textContent = fmt(c.no_clasificado || 0);
+  document.getElementById("kVuln").textContent = fmt(c.vulnerabilidad || 0);
+  document.getElementById("kLast").textContent = "Última recolección: " + fdate(s.last_collected_at);
+
+  const subs = Object.keys(s.by_subreddit);
+  const fSub = document.getElementById("fSub");
+  if (fSub.options.length === 1) subs.forEach(x => fSub.add(new Option(`${x} (${fmt(s.by_subreddit[x])})`, x)));
+
+  const cats = CATS.filter(k => c[k]);
+  chCat?.destroy();
+  chCat = new Chart(document.getElementById("chCat"), {
+    type: "doughnut",
+    data: {labels: cats, datasets: [{data: cats.map(k => c[k]), backgroundColor: cats.map(k => CAT_COLOR[k]), borderColor: "#111a2e", borderWidth: 2}]},
+    options: {maintainAspectRatio: false, cutout: "58%",
+      plugins: {legend: LEGEND(innerWidth < 480 ? "bottom" : "right"), tooltip: TOOLTIP},
+      onResize: (ch, size) => { const pos = size.width < 420 ? "bottom" : "right"; if (ch.options.plugins.legend.position !== pos) { ch.options.plugins.legend.position = pos; ch.update("none"); } },
+      onClick: (_, els) => { if (els.length) { setFilter("category", cats[els[0].index]); } },
+      onHover: (e, els) => e.native.target.style.cursor = els.length ? "pointer" : "default"}
+  });
+
+  const byS = {}; s.sentiment_by_subreddit.forEach(r => (byS[r.subreddit] ||= {})[r.sentiment] = r.n);
+  chSub?.destroy();
+  chSub = new Chart(document.getElementById("chSub"), {
+    type: "bar",
+    data: {labels: subs, datasets: SENTS.map(k => ({label: k, backgroundColor: SENT_COLOR[k], data: subs.map(x => byS[x]?.[k] || 0)}))},
+    options: {indexAxis: "y", maintainAspectRatio: false,
+      scales: {x: {stacked: true, ticks: {color: "#94a3b8", font: {size: 12.5}}, grid: {color: "#1f2b45"}}, y: {stacked: true, ticks: {color: "#cbd5e1", font: {size: 12.5}}, grid: {display: false}}},
+      plugins: {legend: LEGEND("top"), tooltip: TOOLTIP},
+      onClick: (_, els) => { if (els.length) setFilter("subreddit", subs[els[0].index]); },
+      onHover: (e, els) => e.native.target.style.cursor = els.length ? "pointer" : "default"}
+  });
+}
+
+/* ---------- Bandeja ---------- */
+function syncControls() {
+  fCat.value = state.category; fSent.value = state.sentiment; fSub.value = state.subreddit; fQ.value = state.q;
+}
+function setFilter(k, v) { state[k] = v; state.page = 1; syncControls(); loadPosts(); document.getElementById("rows").scrollIntoView({behavior: "smooth", block: "center"}); }
+
+async function loadPosts() {
+  const p = new URLSearchParams({page: state.page, page_size: state.size, sort: state.sort, order: state.order});
+  ["category", "sentiment", "subreddit", "q"].forEach(k => state[k] && p.set(k, state[k]));
+  const d = await api("/api/posts?" + p);
+  total = d.total;
+  document.getElementById("resCount").textContent = `${fmt(d.total)} publicaciones`;
+  const pages = Math.max(1, Math.ceil(d.total / state.size));
+  document.getElementById("pageInfo").textContent = `Página ${state.page} de ${fmt(pages)}`;
+  prev.disabled = state.page <= 1; next.disabled = state.page >= pages;
+  document.getElementById("rows").innerHTML = d.items.length ? d.items.map(r => `
+    <tr class="row border-t border-slate-800/70" data-id="${esc(r.post_id)}">
+      <td class="mono px-3 py-2 whitespace-nowrap text-slate-400">${fdate(r.created_utc)}</td>
+      <td class="mono px-3 py-2 whitespace-nowrap text-cyan-300">r/${esc(cleanSub(r.subreddit))}</td>
+      <td class="px-3 py-2 min-w-[240px] max-w-md"><span class="line-clamp-2 break-words">${esc(r.title)}</span></td>
+      <td class="px-3 py-2">${pill("threat_category", r.threat_category, CATS, CAT_COLOR)}</td>
+      <td class="px-3 py-2">${pill("sentiment", r.sentiment, SENTS, SENT_COLOR)}</td>
+      <td class="px-3 py-2 text-right whitespace-nowrap">
+        <button data-act="view" class="text-cyan-300 hover:underline mr-3">Ver detalle</button>
+        <button data-act="del" class="text-red-400 hover:underline">Descartar</button>
+      </td>
+    </tr>`).join("") : `<tr><td colspan="6" class="px-3 py-10 text-center text-slate-400">Sin resultados para los filtros actuales</td></tr>`;
+  rowsData = Object.fromEntries(d.items.map(r => [r.post_id, r]));
+}
+let rowsData = {};
+
+document.getElementById("rows").addEventListener("change", async e => {
+  const f = e.target.dataset.f; if (!f) return;
+  const sel = e.target, id = sel.closest("tr").dataset.id, colors = f === "threat_category" ? CAT_COLOR : SENT_COLOR;
+  const prevVal = rowsData[id]?.[f];
+  paintPill(sel, colors);                       // color al instante, sin recargar la tabla
+  sel.disabled = true;
+  try {
+    await api("/api/posts/" + encodeURIComponent(id), {method: "PATCH", headers: {"Content-Type": "application/json"}, body: JSON.stringify({[f]: sel.value})});
+    if (rowsData[id]) rowsData[id][f] = sel.value;
+    toast(`Reclasificado: ${f === "threat_category" ? "categoría" : "sentimiento"} → ${sel.value}`);
+    loadStats().catch(() => {});                // KPIs y gráficos
+  } catch (err) {
+    if (prevVal) { sel.value = prevVal; paintPill(sel, colors); }
+    toast("No se pudo guardar: " + err.message, false);
+  } finally { sel.disabled = false; }
+});
+
+document.getElementById("rows").addEventListener("click", async e => {
+  const act = e.target.dataset.act; if (!act) return;
+  const id = e.target.closest("tr").dataset.id, r = rowsData[id];
+  if (act === "view") {
+    mPost = r; showOriginal();
+    mTitle.textContent = r.title;
+    mMeta.innerHTML = badge(r.threat_category, CAT_COLOR) + badge(r.sentiment, SENT_COLOR) +
+      `<span class="px-2 py-0.5 rounded-full border border-slate-700 text-slate-300">r/${esc(cleanSub(r.subreddit))}</span>` +
+      `<span class="px-2 py-0.5 rounded-full border border-slate-700 text-slate-300">${fdate(r.created_utc)}</span>` +
+      `<span class="px-2 py-0.5 rounded-full border border-slate-700 text-slate-300">score ${r.score ?? 0} · ${r.num_comments ?? 0} comentarios</span>` +
+      `<span class="px-2 py-0.5 rounded-full border border-slate-700 text-slate-300">VADER ${(r.compound ?? 0).toFixed(3)}</span>`;
+    mBody.textContent = r.content || "(sin contenido; ver el post original)";
+    mId.textContent = "ID " + r.post_id + " · autor " + r.author;
+    const ok = r.url && /^https?:\/\//i.test(r.url);
+    mLink.style.display = ok ? "" : "none"; if (ok) mLink.href = r.url;
+    modal.classList.remove("hidden");
+  } else if (act === "del") {
+    if (!confirm("¿Descartar esta publicación como ruido/falso positivo?\nSe elimina de la base de datos.\n\n" + r.title)) return;
+    try {
+      await api("/api/posts/" + encodeURIComponent(id), {method: "DELETE"});
+      toast("Publicación descartada");
+      await Promise.all([loadPosts(), loadStats()]);
+    } catch (err) { toast("No se pudo descartar: " + err.message, false); }
+  }
+});
+
+/* ---------- Filtros ---------- */
+const fCat = document.getElementById("fCat"), fSent = document.getElementById("fSent"), fSub = document.getElementById("fSub"), fQ = document.getElementById("fQ");
+CATS.forEach(c => fCat.add(new Option(c, c))); SENTS.forEach(s => fSent.add(new Option(s, s)));
+fCat.onchange = () => setFilterQuiet("category", fCat.value);
+fSent.onchange = () => setFilterQuiet("sentiment", fSent.value);
+fSub.onchange = () => setFilterQuiet("subreddit", fSub.value);
+function setFilterQuiet(k, v) { state[k] = v; state.page = 1; loadPosts(); }
+let t; fQ.oninput = () => { clearTimeout(t); t = setTimeout(() => setFilterQuiet("q", fQ.value.trim()), 300); };
+document.getElementById("fPend").onclick = () => setFilter("category", "no_clasificado");
+document.getElementById("fClear").onclick = () => { Object.assign(state, {category: "", sentiment: "", subreddit: "", q: "", page: 1}); syncControls(); loadPosts(); };
+document.getElementById("thDate").onclick = () => { state.order = state.order === "desc" ? "asc" : "desc"; thDate.textContent = "Fecha " + (state.order === "desc" ? "▾" : "▴"); loadPosts(); };
+prev.onclick = () => { state.page--; loadPosts(); }; next.onclick = () => { state.page++; loadPosts(); };
+
+/* ---------- Traducción (caché en memoria por post) ---------- */
+const trCache = new Map();   // post_id -> {title, content}
+let mPost = null, mTranslated = false;
+const ORIG_BODY = () => mPost.content || "(sin contenido; ver el post original)";
+function showOriginal() {
+  mTranslated = false;
+  if (!mPost) return;
+  mTitle.textContent = mPost.title; mBody.textContent = ORIG_BODY();
+  document.getElementById("trBadge")?.remove();
+  mTr.textContent = "🌐 Traducir al español"; mTr.disabled = false;
+}
+function showTranslated(t) {
+  mTranslated = true;
+  mTitle.textContent = t.title; mBody.textContent = t.content || ORIG_BODY();
+  if (!document.getElementById("trBadge"))
+    mMeta.insertAdjacentHTML("beforeend", '<span id="trBadge" class="mono px-2 py-0.5 rounded-full border border-emerald-500/40 text-emerald-300 bg-emerald-500/10">Traducido al español</span>');
+  mTr.textContent = "Ver original (EN)"; mTr.disabled = false;
+}
+mTr.onclick = async () => {
+  if (!mPost) return;
+  if (mTranslated) return showOriginal();
+  const id = mPost.post_id;
+  if (trCache.has(id)) return showTranslated(trCache.get(id));
+  mTr.disabled = true; mTr.textContent = "Traduciendo...";
+  try {
+    const t = await api("/api/posts/" + encodeURIComponent(id) + "/translate", {method: "POST"});
+    trCache.set(id, t);
+    if (mPost && mPost.post_id === id) showTranslated(t); else mTr.disabled = false;
+  } catch (err) {
+    mTr.disabled = false; mTr.textContent = "🌐 Traducir al español";
+    toast("No se pudo traducir: " + err.message, false);
+  }
+};
+
+/* ---------- Exportar CSV ---------- */
+document.getElementById("fExport").onclick = () => {
+  const p = new URLSearchParams();
+  ["category", "sentiment", "subreddit", "q"].forEach(k => state[k] && p.set(k, state[k]));
+  toast(`Exportando ${fmt(total)} registros con los filtros activos…`);
+  const a = document.createElement("a");
+  a.href = "/api/posts/export?" + p; a.download = ""; document.body.appendChild(a); a.click(); a.remove();
+};
+
+/* ---------- Nueva alerta / clasificación manual ---------- */
+const nModal = document.getElementById("nModal"), nResult = document.getElementById("nResult");
+const closeN = () => nModal.classList.add("hidden");
+newBtn.onclick = () => { nResult.classList.add("hidden"); nModal.classList.remove("hidden"); nTitle.focus(); };
+nClose.onclick = nCancel.onclick = closeN;
+nModal.onclick = e => { if (e.target === nModal) closeN(); };
+nForm.onsubmit = async e => {
+  e.preventDefault(); nSave.disabled = true;
+  try {
+    const body = {title: nTitle.value.trim(), content: nText.value.trim(), source: cleanSub(nSource.value) || "manual"};
+    if (nUrl.value.trim()) body.url = nUrl.value.trim();
+    const r = await api("/api/posts", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+    nResult.innerHTML = `<p class="font-semibold text-white mb-2">Resultado del clasificador</p><div class="flex flex-wrap gap-2 items-center">${badge(r.threat_category, CAT_COLOR)}${badge(r.sentiment, SENT_COLOR)}<span class="mono muted">VADER compound ${r.compound.toFixed(3)}</span><span class="mono muted">${esc(r.post_id)}</span></div>`;
+    nResult.classList.remove("hidden");
+    toast(`Alerta guardada: ${r.threat_category} / ${r.sentiment}`);
+    nTitle.value = nText.value = nUrl.value = "";
+    Object.assign(state, {category: "", sentiment: "", subreddit: "", q: "", page: 1, sort: "created_utc", order: "desc"}); syncControls();
+    await Promise.all([loadStats(), loadPosts()]);
+  } catch (err) { toast("No se pudo guardar: " + err.message, false); }
+  finally { nSave.disabled = false; }
+};
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeN(); });
+
+/* ---------- Modal ---------- */
+mClose.onclick = () => modal.classList.add("hidden");
+modal.onclick = e => { if (e.target === modal) modal.classList.add("hidden"); };
+document.addEventListener("keydown", e => { if (e.key === "Escape") modal.classList.add("hidden"); });
+
+/* ---------- Sincronización ---------- */
+syncBtn.onclick = async () => {
+  syncBtn.disabled = true; syncSpin.classList.remove("hidden"); syncTxt.textContent = "Sincronizando…";
+  try {
+    const r = await api("/api/pipeline/sync", {method: "POST"});
+    toast(r.ok ? r.detail : "Sincronización con problemas: " + r.detail, r.ok);
+    await Promise.all([loadStats(), loadPosts()]);
+  } catch (err) { toast("Error al sincronizar: " + err.message, false); }
+  finally { syncBtn.disabled = false; syncSpin.classList.add("hidden"); syncTxt.textContent = "Sincronizar Fuentes Ahora"; }
+};
+
+/* ---------- Estado de la base y arranque ---------- */
+async function health() {
+  const el = document.getElementById("dbStatus");
+  try {
+    await api("/api/health");
+    el.className = "flex items-center gap-2 text-xs px-3 py-1.5 rounded-full border border-emerald-500/50 text-emerald-300 bg-emerald-500/10";
+    el.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Base conectada (PostgreSQL)';
+  } catch {
+    el.className = "flex items-center gap-2 text-xs px-3 py-1.5 rounded-full border border-red-500/50 text-red-300 bg-red-500/10";
+    el.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-400"></span> Base sin conexión';
+  }
+}
+// Swagger vive en el puerto 8000 de la API
+docsLink.href = `${location.protocol}//${location.hostname}:8000/docs`;
+health(); setInterval(health, 30000);
+loadStats().catch(e => toast("No se pudieron cargar las estadísticas: " + e.message, false));
+loadPosts().catch(e => toast("No se pudo cargar la bandeja: " + e.message, false));
+</script>
+</body>
+</html>
